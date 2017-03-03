@@ -2,6 +2,6 @@
 
 int main()
 {
-	printf("Wow man cool code!!11!!1!");
+	printf("conflictssss");
 	return 0;
 }
