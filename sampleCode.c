@@ -2,6 +2,6 @@
 
 int main()
 {
-	printf("conflictssss");
+	printf("conflictx");
 	return 0;
 }
