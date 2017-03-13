@@ -1,0 +1,4 @@
+var x, y, z, a, b, c, d, e, f, g;
+begin
+	x := y + 56;
+end.
