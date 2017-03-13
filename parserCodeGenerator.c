@@ -382,8 +382,21 @@ void printSymbolTable()
 	useful for checking if your token is a periodsym, for example, by doing
 	if (getTokenType(curToken) == periodsym).
 */
+
+typdef struct code
+{
+	int op;
+	int r;
+	int l;
+	int m;
+} code;
+
+code code_array[MAX_CODE_LENGTH];
+int cx = 0;
+
 int curToken = 0;
 
+void emit(int op, int r, int l, int m);
 void doTheAwesomeParsingAndCodeGenerating();
 void program();
 void block();
@@ -392,6 +405,23 @@ void condition();
 void expression();
 void term();
 void factor();
+
+void emit(int op, int r, int l, int m)
+{
+	if (cx > MAX_CODE_LENGTH)
+	{
+		//error(25, curToken); error
+
+	}
+	else
+	{
+		code_array[cx].op = op;
+		code_array[cx].r = r;
+		code_array[cx].l = l;
+		code_array[cx].m = m;
+		cx++;
+	}
+}
 
 void doTheAwesomeParsingAndCodeGenerating()
 {
@@ -529,7 +559,7 @@ void block()
 
 	//And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
 	statement();
-	
+
 	printf("Got block from %d-%d\n", start, curToken);
 }
 

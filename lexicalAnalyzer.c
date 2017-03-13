@@ -116,7 +116,7 @@ int mapSymbol(char * symbol)
 		return gtrsym;
 	if (strcmp(symbol, ";") == 0)
 		return semicolonsym;
-	
+
 	if (strcmp(symbol, "<>") == 0)
 		return neqsym;
 	if (strcmp(symbol, "<=") == 0)
@@ -125,7 +125,7 @@ int mapSymbol(char * symbol)
 		return geqsym;
 	if (strcmp(symbol, ":=") == 0)
 		return becomesym;
-	
+
 }
 
 //~~~Character Manipulation Methods~~~
@@ -260,7 +260,7 @@ void openFiles(char * inputFile, char * outputFile)
 {
 	FILE * inFile = fopen(inputFile, "r");
 	outFile = fopen(outputFile, "w");
-	
+
 	fseek(inFile, 0, SEEK_END);
 	int inputSize = ftell(inFile)-1;
 	fseek(inFile, 0, SEEK_SET);
@@ -362,7 +362,7 @@ void processText()
 		{
 			//Trash the invisible characters
 		}
-		
+
 		//It's not invisible if we are here!
 		if (isAlpha(nextChar))
 		{
@@ -490,7 +490,7 @@ void processText()
 					throwError("Invalid symbol!");
 				}
 			}
-			
+
 		}
 		else if (nextChar == '\0')
 		{
@@ -503,7 +503,7 @@ void processText()
 		}
 	}
 	printf("Reached end of file. See output.txt for output!\n");
-	
+
 	//Print results to output file...
 	fprintf(outFile, "%s\n", lexemeTable);
 	fprintf(outFile, "%s", lexemeList);
