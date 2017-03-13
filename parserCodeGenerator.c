@@ -9,10 +9,23 @@
 #define MAX_INPUT_SIZE 32768
 #define MAX_TOKEN_SIZE 64
 
+typedef struct
+{
+	int kind; 		// const = 1, var = 2, proc = 3
+	char name[10];	// name up to 11 chars
+	int val; 		// number (ASCII value)
+	int level; 		// L level
+	int addr; 		// M address
+} symbol;
+
+symbol symbol_table[MAX_INPUT_SIZE]; //Just in case
+int symbol_table_index = 0;
+
+
 // --------------------------------------------------Begin Random Additional Code--------------------------------------------------
 
 /*
-	This method halts the program execution after printing an error 
+	This method halts the program execution after printing an error
 	with code [code].
 */
 void error(int code, int token)
@@ -70,7 +83,7 @@ void error(int code, int token)
 		printf("This number is too large.\n");
 	if (code == 26)
 		printf("The input file is too large.\n");
-	
+
 	exit(1);
 }
 
@@ -134,35 +147,35 @@ void readInputFile()
 	//Seek to the end and get the length of the input file in characters...
 	fseek(inputFile, 0, SEEK_END);
 	int inputSize = ftell(inputFile)-1;
-	
+
 	//Seek back to the beginning
 	fseek(inputFile, 0, SEEK_SET);
-	
+
 	//Are we within bounds?
 	if (inputSize > MAX_INPUT_SIZE)
 	{
 		error(26, -1);
 	}
-	
+
 	//Iterate character by character through the file...
 	int i, place = 0;
 	for(i = 0; i < inputSize; i++)
 	{
 		//Read a character into lexemeList at place...
 		fscanf(inputFile, "%c", &lexemeList[place]);
-		
-		//Was that character a newline? If so, clear the 
+
+		//Was that character a newline? If so, clear the
 		//lexemeList (because there must be another line below)
 		if (lexemeList[place] == '\n')
 		{
 			place = -1;
 			clearLexemeList();
 		}
-		
+
 		//Increment place...
 		place++;
 	}
-	
+
 	//Make sure our lexemeList string has a null terminator at the end!
 	lexemeList[place] = '\0';
 }
@@ -280,11 +293,11 @@ int elsesym = 33;
 // --------------------------------------------------Begin Parser/Code Generator Code--------------------------------------------------
 
 /*
-	This variable represents, globally, and at all times, the NEXT token 
+	This variable represents, globally, and at all times, the NEXT token
 	to be evaluated. Thus, to get the next token to be evaluated, just
 	use tokenList[curToken], which will be the string containing the next
 	token to be evaluated. Use curToken++ to move up one token, etc...
-	
+
 	Also! There is a method above called getTokenType that takes an index,
 	which curToken is, and returns the type (number) of that token. It is
 	useful for checking if your token is a periodsym, for example, by doing
@@ -292,10 +305,22 @@ int elsesym = 33;
 */
 int curToken = 0;
 
+void addToSymbolTable(int kind, char *name, int val, int level, int addr);
 void doTheAwesomeParsingAndCodeGenerating();
 void program();
 void block();
 void statement();
+
+//Not sure if we need the level and addr right now
+void addToSymbolTable(int kind, char *name, int val, int level, int addr)
+{
+	symbol_table[symbol_table_index].kind = kind;
+	strcpy(symbol_table[symbol_table_index].name, name);
+	symbol_table[symbol_table_index].val = val;
+	symbol_table[symbol_table_index].level = level;
+	symbol_table[symbol_table_index].addr = addr;
+	symbol_table_index++;
+}
 
 void doTheAwesomeParsingAndCodeGenerating()
 {
@@ -318,7 +343,7 @@ void program()
 void block()
 {
 	//A block can be a constant-declaration, variable declaration, or a statement
-	
+
 	//If current token is a constant symbol...
 	if (getTokenType(curToken) == constsym)
 	{
@@ -349,7 +374,7 @@ void block()
 			curToken++;
 		}
 		while(getTokenType(curToken) == commasym);
-		
+
 		//Now we expect a semicolon...
 		if (getTokenType(curToken) != semicolonsym)
 		{
@@ -357,7 +382,7 @@ void block()
 			error(5, curToken);
 		}
 	}
-	
+
 	//If we've got a variable declaration
 	if (getTokenType(curToken) == varsym)
 	{
@@ -374,7 +399,7 @@ void block()
 			curToken++;
 		}
 		while(getTokenType(curToken) == commasym);
-		
+
 		//Now we expect a semicolon...
 		if (getTokenType(curToken) != semicolonsym)
 		{
@@ -382,7 +407,7 @@ void block()
 			error(5, curToken);
 		}
 	}
-	
+
 	while(getTokenType(curToken) == procsym)
 	{
 		curToken++;
@@ -400,25 +425,25 @@ void block()
 			error(17, curToken);
 		}
 		curToken++;
-		
+
 		/*
-			TODO: ask about this calling block and looking for semicolon after a 
+			TODO: ask about this calling block and looking for semicolon after a
 			procedure line. Doesn't that imply that a procedure could just be like
-			
+
 			procedure MULT;
 				var x;;
-				
+
 			Which looks invalid to me. Doesn't block need to consider begin and end as well?
-			
+
 			Edit: I've kind of resolved this alone. The fact that block calls statement later implies
 			that there is at least one statement after variable declaration, procedure declaration, or
 			whatever. Thus, it makes sense to check for semicolon after block because a procedure is
 			a procedure declaration, then some other declarations, then a statement, then a semicolon.
 		*/
-		
+
 		//Now, after the procedure declaration there should be a block of code...
 		block();
-	
+
 		//After every procedure is an additional semicolon...
 		if (getTokenType(curToken) != semicolonsym)
 		{
@@ -426,11 +451,48 @@ void block()
 		}
 		curToken++;
 	}
-	
+
 	//And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
 	statement();
-	
+
 	curToken++;
+}
+
+//Powerpoint pseudo code
+void constdel()
+{
+	do
+	{
+		curToken++;
+		if (getTokenType(curToken) != identsym)
+		{
+			//Expected an identifier after constsym...
+			error(4, curToken);
+		}
+		curToken++;
+		if (getTokenType(curToken) != eqlsym)
+		{
+			//Expected equal symbol (NOT become symbol because it's constant declaration)
+			error(3, curToken);
+		}
+		curToken++;
+		if (getTokenType(curToken) != numbersym)
+		{
+			//Expected a number!
+			error(2, curToken);
+		}
+		addToSymbolTable(1, curToken - 2, curToken, 0, 0);
+		curToken++;
+	} while (getTokenType(curToken) == commasym)
+
+	curToken++;
+	if (getTokenType(curToken) != semicolonsym)
+	{
+		//Expected a semicolon!
+		error(5, curToken);
+	}
+	curToken++;
+
 }
 
 void statement()
@@ -446,6 +508,8 @@ void statement()
 	I expect this program to take an input file of lexemes, parse it, and print out
 	a file containing whether or not parsing succeeded, and then the generated code.
 */
+
+
 int main()
 {
 	//TODO: Later, we can make the arguments determine the input and output file paths, but for now it's hardcoded as input.txt and output.txt.
@@ -454,7 +518,7 @@ int main()
 	populateTokenList();
 	printTokenList();
 	doTheAwesomeParsingAndCodeGenerating();
-	
+
 	return 0;
 }
 
