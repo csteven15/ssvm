@@ -347,6 +347,7 @@ void block()
 	//If current token is a constant symbol...
 	if (getTokenType(curToken) == constsym)
 	{
+		//constdel();
 		do
 		{
 			curToken++;
@@ -381,11 +382,13 @@ void block()
 			//Missing a semicolon!
 			error(5, curToken);
 		}
+		curToken++;
 	}
 
 	//If we've got a variable declaration
 	if (getTokenType(curToken) == varsym)
 	{
+		//vardel();
 		do
 		{
 			curToken++;
@@ -406,6 +409,7 @@ void block()
 			//Missing a semicolon!
 			error(5, curToken);
 		}
+		curToken++;
 	}
 
 	while(getTokenType(curToken) == procsym)
@@ -454,11 +458,10 @@ void block()
 
 	//And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
 	statement();
-
 	curToken++;
 }
 
-//Powerpoint pseudo code
+/* ignore from powerpoint
 void constdel()
 {
 	do
@@ -469,6 +472,7 @@ void constdel()
 			//Expected an identifier after constsym...
 			error(4, curToken);
 		}
+		curToken++;
 		curToken++;
 		if (getTokenType(curToken) != eqlsym)
 		{
@@ -483,7 +487,9 @@ void constdel()
 		}
 		addToSymbolTable(1, curToken - 2, curToken, 0, 0);
 		curToken++;
-	} while (getTokenType(curToken) == commasym)
+		curToken++;
+	}
+	while (getTokenType(curToken) == commasym)
 
 	curToken++;
 	if (getTokenType(curToken) != semicolonsym)
@@ -495,9 +501,87 @@ void constdel()
 
 }
 
+void vardel()
+{
+	do
+	{
+		curToken++;
+		if (getTokenType(curToken) != identsym)
+		{
+			//Following var we expected an identifier...
+			error(4, curToken);
+		}
+		//Double skip because following the identsym is the identifier itself...
+		curToken++;
+		curToken++;
+		addToSymbolTable(2, curToken - 2, curToken - 1, 0, 0);
+	}
+	while(getTokenType(curToken) == commasym);
+
+	//Now we expect a semicolon...
+	if (getTokenType(curToken) != semicolonsym)
+	{
+		//Missing a semicolon!
+		error(5, curToken);
+	}
+	curToken++;
+}
+*/
+
 void statement()
 {
-	//blah blah parse statement
+	// your code
+}
+
+void expresssion()
+{
+	if (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)
+	{
+		curToken++;
+		term();
+	}
+	while (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)
+	{
+		curToken++;
+		term();
+	}
+}
+
+void term()
+{
+	factor();
+	while (getTokenType(curToken) == multsym || getTokenType(curToken) == slashsym)
+	{
+		curToken++;
+		factor();
+	}
+}
+
+void factor()
+{
+	if (getTokenType(curToken) == identsym)
+	{
+		curToken++;
+	}
+	else if (getTokenType(curToken) == numbersym)
+	{
+		curToken++;
+	}
+	else if (getTokenType(curToken) == lparentsym)
+	{
+		curToken++;
+		expression();
+		if (getTokenType(curToken) != rparentsym)
+		{
+			//Expect )
+			error(22, curToken);
+		}
+		curToken++;
+	}
+	else
+	{
+		//error()
+	}
 }
 
 // --------------------------------------------------End Parser/Code Generator Code--------------------------------------------------
