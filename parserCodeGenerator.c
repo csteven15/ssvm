@@ -17,6 +17,7 @@
 */
 void error(int code)
 {
+	printf("ERROR: ");
 	if (code == 1)
 		printf("Use of = instead of :=.\n");
 	if (code == 2)
@@ -227,15 +228,38 @@ void printTokenList()
 	printf("\n");
 }
 
+/*
+	Returns an integer representing the type of the token
+	at the index [tokenIndex]. Returns 0 if an invalid token
+	is at [tokenIndex], meaning the token had no integer value.
+*/
+int getTokenType(int tokenIndex)
+{
+	return atoi(tokenList[tokenIndex]);
+}
+
 // --------------------------------------------------End Token List Management Code--------------------------------------------------
 
 // --------------------------------------------------Begin Parser/Code Generator Code--------------------------------------------------
 
-void parseLexemes();
+/*
+	This variable represents, globally, and at all times, the NEXT token 
+	to be evaluated. Thus, to get the next token to be evaluated, just
+	use tokenList[curToken], which will be the string containing the next
+	token to be evaluated. Use curToken++ to move up one token, etc...
+	
+	Also! There is a method above called getTokenType that takes an index,
+	which curToken is, and returns the type (number) of that token. It is
+	useful for checking if your token is a periodsym, for example, by doing
+	if (getTokenType(curToken) == periodsym).
+*/
+int curToken = 0;
+
+void doTheAwesomeParsingAndCodeGenerating();
 void program();
 void block();
 
-void parseLexemes()
+void doTheAwesomeParsingAndCodeGenerating()
 {
 	program();
 }
@@ -243,10 +267,18 @@ void parseLexemes()
 void program()
 {
 	block();
+	//If current token is NOT a period
+	if (getTokenType(curToken) != 19)
+	{
+		//Program must end witha period
+		error(9);
+	}
+	curToken++;
 }
 
 void block()
 {
+	//Blah blah get block here...
 }
 
 // --------------------------------------------------End Parser/Code Generator Code--------------------------------------------------
@@ -264,7 +296,7 @@ int main()
 	readInputFile();
 	populateTokenList();
 	printTokenList();
-	parseLexemes();
+	doTheAwesomeParsingAndCodeGenerating();
 	
 	return 0;
 }
