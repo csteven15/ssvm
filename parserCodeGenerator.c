@@ -10,18 +10,6 @@
 #define MAX_TOKEN_SIZE 64
 #define MAX_SYMBOL_TABLE_SIZE 256
 
-typedef struct
-{
-	int kind; 		// const = 1, var = 2, proc = 3
-	char name[10];	// name up to 11 chars
-	int val; 		// number (ASCII value)
-	int level; 		// L level
-	int addr; 		// M address
-} symbol;
-
-symbol symbol_table[MAX_INPUT_SIZE]; //Just in case
-int symbol_table_index = 0;
-
 
 // --------------------------------------------------Begin Random Additional Code--------------------------------------------------
 
@@ -302,7 +290,7 @@ typedef struct symbol
 	int val;
 	int level;
 	int addr;
-} 
+}
 symbol;
 
 symbol symbolTable[MAX_SYMBOL_TABLE_SIZE];
@@ -394,22 +382,10 @@ void printSymbolTable()
 */
 int curToken = 0;
 
-void addToSymbolTable(int kind, char *name, int val, int level, int addr);
 void doTheAwesomeParsingAndCodeGenerating();
 void program();
 void block();
 void statement();
-
-//Not sure if we need the level and addr right now
-void addToSymbolTable(int kind, char *name, int val, int level, int addr)
-{
-	symbol_table[symbol_table_index].kind = kind;
-	strcpy(symbol_table[symbol_table_index].name, name);
-	symbol_table[symbol_table_index].val = val;
-	symbol_table[symbol_table_index].level = level;
-	symbol_table[symbol_table_index].addr = addr;
-	symbol_table_index++;
-}
 
 void doTheAwesomeParsingAndCodeGenerating()
 {
@@ -630,9 +606,9 @@ void statement()
 			//Must be assignment statement
 			error(13, curToken);
 		}
-		
+
 		curToken++;
-		
+
 		//Parse an expression...
 		expression();
 	}
@@ -673,7 +649,7 @@ void statement()
 			error(16, curToken);
 		}
 		curToken++;
-		statement();	
+		statement();
 	}
 	else if (getTokenType(curToken) == whilesym)
 	{
