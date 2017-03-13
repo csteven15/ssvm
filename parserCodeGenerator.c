@@ -2,7 +2,14 @@
 #include<stdlib.h>
 #include<string.h>
 
+/*
+	Note that actual capacities listed below are one
+	less due to null terminator requirements.
+*/
 #define MAX_INPUT_SIZE 32768
+#define MAX_TOKEN_SIZE 64
+
+// --------------------------------------------------Begin Random Additional Code--------------------------------------------------
 
 /*
 	This method halts the program execution after printing an error 
@@ -60,9 +67,26 @@ void error(int code)
 		printf("An expression cannot begin with this symbol.\n");
 	if (code == 25)
 		printf("This number is too large.\n");
+	if (code == 26)
+		printf("The input file is too large.\n");
 	
 	exit(1);
 }
+
+/*
+	This method does what it sounds like. It appends one character, [newChar], to
+	the end of the passed in string, [string]. Assumes the passed in string is
+	large enough to accomodate the extra character.
+*/
+void appendCharToString(char * string, char newChar)
+{
+	int len = strlen(string);
+	string[len] = newChar;
+	string[len+1] = '\0';
+}
+// --------------------------------------------------End Random Additional Code--------------------------------------------------
+
+// --------------------------------------------------Begin File Management Code--------------------------------------------------
 
 //Our files!
 FILE * inputFile;
@@ -77,7 +101,11 @@ void openFiles()
 {
 	inputFile = fopen("laOutput.txt", "r");
 	outputFile = fopen("output.txt", "w");
+
 }
+// --------------------------------------------------End File Management Code--------------------------------------------------
+
+// --------------------------------------------------Begin Lexeme List Management Code--------------------------------------------------
 
 //The actual input file data handling...
 char lexemeList[MAX_INPUT_SIZE];
@@ -109,6 +137,12 @@ void readInputFile()
 	//Seek back to the beginning
 	fseek(inputFile, 0, SEEK_SET);
 	
+	//Are we within bounds?
+	if (inputSize > MAX_INPUT_SIZE)
+	{
+		error(26);
+	}
+	
 	//Iterate character by character through the file...
 	int i, place = 0;
 	for(i = 0; i < inputSize; i++)
@@ -132,16 +166,92 @@ void readInputFile()
 	lexemeList[place] = '\0';
 }
 
+// --------------------------------------------------End Lexeme List Management Code--------------------------------------------------
 
+// --------------------------------------------------Begin Token List Management Code--------------------------------------------------
+
+//This list will hold our tokens.
+char tokenList[MAX_INPUT_SIZE][MAX_TOKEN_SIZE];
+
+/*
+	This method wipes out everything in [tokenList] with null terminators.
+*/
+void clearTokenList()
+{
+	for(int t = 0; t < MAX_INPUT_SIZE; t++)
+	{
+		for(int tc = 0; tc < MAX_TOKEN_SIZE; tc++)
+		{
+			tokenList[t][tc] = '\0';
+		}
+	}
+}
+
+/*
+	This method goes through the contents of [lexemeList] and separates it
+	nicely into tokens in [tokenList].
+*/
+void populateTokenList()
+{
+	clearTokenList();
+
+	int len = strlen(lexemeList);
+	int curToken = 0;
+	for(int i = 0; i < len; i++)
+	{
+		if (lexemeList[i] == ' ')
+		{
+			curToken++;
+			continue;
+		}
+		else
+		{
+			appendCharToString(tokenList[curToken], lexemeList[i]);
+		}
+	}
+}
+
+/*
+	This method is for debugging sanity. It prints the contents of [tokenList] nicely.
+*/
+void printTokenList()
+{
+	printf("Token list contents:\n");
+	for(int t = 0; t < MAX_INPUT_SIZE; t++)
+	{
+		if (strlen(tokenList[t]) > 0)
+		{
+			printf("Token %d: \"%s\"\n", t, tokenList[t]);
+		}
+	}
+	printf("\n");
+}
+
+// --------------------------------------------------End Token List Management Code--------------------------------------------------
 
 // --------------------------------------------------Begin Parser/Code Generator Code--------------------------------------------------
 
+void parseLexemes();
+void program();
+void block();
+
 void parseLexemes()
 {
-	
+	program();
+}
+
+void program()
+{
+	block();
+}
+
+void block()
+{
 }
 
 // --------------------------------------------------End Parser/Code Generator Code--------------------------------------------------
+
+// --------------------------------------------------Begin Main Code--------------------------------------------------
 
 /*
 	I expect this program to take an input file of lexemes, parse it, and print out
@@ -152,7 +262,11 @@ int main()
 	//TODO: Later, we can make the arguments determine the input and output file paths, but for now it's hardcoded as input.txt and output.txt.
 	openFiles();
 	readInputFile();
+	populateTokenList();
+	printTokenList();
 	parseLexemes();
 	
 	return 0;
 }
+
+// --------------------------------------------------End Main Code--------------------------------------------------
