@@ -15,9 +15,9 @@
 	This method halts the program execution after printing an error 
 	with code [code].
 */
-void error(int code)
+void error(int code, int token)
 {
-	printf("ERROR: ");
+	printf("Error on token %d: ", token);
 	if (code == 1)
 		printf("Use of = instead of :=.\n");
 	if (code == 2)
@@ -141,7 +141,7 @@ void readInputFile()
 	//Are we within bounds?
 	if (inputSize > MAX_INPUT_SIZE)
 	{
-		error(26);
+		error(26, -1);
 	}
 	
 	//Iterate character by character through the file...
@@ -238,6 +238,43 @@ int getTokenType(int tokenIndex)
 	return atoi(tokenList[tokenIndex]);
 }
 
+/*
+	Here is a list of the token types
+*/
+int nulsym = 1;
+int identsym = 2;
+int numbersym = 3;
+int plussym = 4;
+int minussym = 5;
+int multsym = 6;
+int slashsym = 7;
+int oddsym = 8;
+int eqlsym = 9;
+int neqsym = 10;
+int lesssym = 11;
+int leqsym = 12;
+int gtrsym = 13;
+int geqsym = 14;
+int lparentsym = 15;
+int rparentsym = 16;
+int commasym = 17;
+int semicolonsym = 18;
+int periodsym = 19;
+int becomesym = 20;
+int beginsym = 21;
+int endsym = 22;
+int ifsym = 23;
+int thensym = 24;
+int whilesym = 25;
+int dosym = 26;
+int callsym = 27;
+int constsym = 28;
+int varsym = 29;
+int procsym = 30;
+int writesym = 31;
+int readsym = 32;
+int elsesym = 33;
+
 // --------------------------------------------------End Token List Management Code--------------------------------------------------
 
 // --------------------------------------------------Begin Parser/Code Generator Code--------------------------------------------------
@@ -268,17 +305,58 @@ void program()
 {
 	block();
 	//If current token is NOT a period
-	if (getTokenType(curToken) != 19)
+	if (getTokenType(curToken) != periodsym)
 	{
-		//Program must end witha period
-		error(9);
+		//Program must end with a period
+		error(9, curToken);
 	}
 	curToken++;
 }
 
 void block()
 {
-	//Blah blah get block here...
+	//A block can be a constant-declaration, variable declaration, or a statement
+	
+	//If current token is a constant symbol...
+	if (getTokenType(curToken) == constsym)
+	{
+		do
+		{
+			curToken++;
+			if (getTokenType(curToken) != identsym)
+			{
+				//Expected an identifier after constsym...
+				error(4, curToken);
+			}
+			//Double skip because following identsym is the identifier name itself...
+			curToken++;
+			curToken++;
+			if (getTokenType(curToken) != eqlsym)
+			{
+				//Expected equal symbol (NOT become symbol because it's constant declaration)
+				error(3, curToken);
+			}
+			curToken++;
+			if (getTokenType(curToken) != numbersym)
+			{
+				//Expected a number!
+				error(2, curToken);
+			}
+			//Double skip because following numbersym is the number itself...
+			curToken++;
+			curToken++;
+		}
+		while(getTokenType(curToken) == commasym);
+		
+		//Now we expect a semicolon...
+		if (getTokenType(curToken) != semicolonsym)
+		{
+			//Missing a semicolon!
+			error(5, curToken);
+		}
+	}
+	
+	curToken++;
 }
 
 // --------------------------------------------------End Parser/Code Generator Code--------------------------------------------------
