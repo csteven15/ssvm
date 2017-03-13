@@ -533,6 +533,26 @@ void statement()
 	// your code
 }
 
+void condition()
+{
+	if (getTokenType(curToken) == oddsym)
+	{
+		curToken++;
+		expression();
+	}
+	else
+	{
+		expression();
+		if (getTokenType(curToken) != eqlsym || getTokenType(curToken) != neqsym || getTokenType(curToken) != lesssym || getTokenType(curToken) != leqsym || getTokenType(curToken) !=gtrsym || getTokenType(curToken) != geqsym)
+		{
+			//Looking for relational symbol
+			error(20, curToken);
+		}
+		curToken++;
+		expresssion();
+	}
+}
+
 void expresssion()
 {
 	if (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)
