@@ -51,7 +51,7 @@ void error(int code, int token)
 	if (code == 16)
 		printf("then expected.\n");
 	if (code == 17)
-		printf("Semicolon or } expected.\n");
+		printf("Semicolon expected.\n"); // I modified this one to not include "or }" because that makes no sense to me.
 	if (code == 18)
 		printf("do expected.\n");
 	if (code == 19)
@@ -295,6 +295,7 @@ int curToken = 0;
 void doTheAwesomeParsingAndCodeGenerating();
 void program();
 void block();
+void statement();
 
 void doTheAwesomeParsingAndCodeGenerating()
 {
@@ -313,6 +314,7 @@ void program()
 	curToken++;
 }
 
+//TODO: ask about this structure of unchained ifs
 void block()
 {
 	//A block can be a constant-declaration, variable declaration, or a statement
@@ -356,7 +358,84 @@ void block()
 		}
 	}
 	
+	//If we've got a variable declaration
+	if (getTokenType(curToken) == varsym)
+	{
+		do
+		{
+			curToken++;
+			if (getTokenType(curToken) != identsym)
+			{
+				//Following var we expected an identifier...
+				error(4, curToken);
+			}
+			//Double skip because following the identsym is the identifier itself...
+			curToken++;
+			curToken++;
+		}
+		while(getTokenType(curToken) == commasym);
+		
+		//Now we expect a semicolon...
+		if (getTokenType(curToken) != semicolonsym)
+		{
+			//Missing a semicolon!
+			error(5, curToken);
+		}
+	}
+	
+	while(getTokenType(curToken) == procsym)
+	{
+		curToken++;
+		if (getTokenType(curToken) != identsym)
+		{
+			//Expected an identifier after beginning of procedure!
+			error(4, curToken);
+		}
+		//Double skip because following the identsym is the identifier itself...
+		curToken++;
+		curToken++;
+		if (getTokenType(curToken) != semicolonsym)
+		{
+			//Expected semicolon after procedure declaration!
+			error(17, curToken);
+		}
+		curToken++;
+		
+		/*
+			TODO: ask about this calling block and looking for semicolon after a 
+			procedure line. Doesn't that imply that a procedure could just be like
+			
+			procedure MULT;
+				var x;;
+				
+			Which looks invalid to me. Doesn't block need to consider begin and end as well?
+			
+			Edit: I've kind of resolved this alone. The fact that block calls statement later implies
+			that there is at least one statement after variable declaration, procedure declaration, or
+			whatever. Thus, it makes sense to check for semicolon after block because a procedure is
+			a procedure declaration, then some other declarations, then a statement, then a semicolon.
+		*/
+		
+		//Now, after the procedure declaration there should be a block of code...
+		block();
+	
+		//After every procedure is an additional semicolon...
+		if (getTokenType(curToken) != semicolonsym)
+		{
+			error(17, curToken);
+		}
+		curToken++;
+	}
+	
+	//And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
+	statement();
+	
 	curToken++;
+}
+
+void statement()
+{
+	//blah blah parse statement
 }
 
 // --------------------------------------------------End Parser/Code Generator Code--------------------------------------------------

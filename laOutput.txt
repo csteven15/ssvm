@@ -1,19 +1,31 @@
 Source Program:
-const x = 754, y = 16;
+var x, y, z, a, b, c, d, e, f, g;
 begin
 	x := y + 56;
 end.
 
 Lexeme Table:
 lexeme       token type
-const        28
+var          29
 x            2
-=            9
-754          3
 ,            17
 y            2
-=            9
-16           3
+,            17
+z            2
+,            17
+a            2
+,            17
+b            2
+,            17
+c            2
+,            17
+d            2
+,            17
+e            2
+,            17
+f            2
+,            17
+g            2
 ;            18
 begin        21
 x            2
@@ -26,4 +38,4 @@ end          22
 .            19
 
 Lexeme List:
-28 2 x 9 3 754 17 2 y 9 3 16 18 21 2 x 20 2 y 4 3 56 18 22 19 
+29 2 x 17 2 y 17 2 z 17 2 a 17 2 b 17 2 c 17 2 d 17 2 e 17 2 f 17 2 g 18 21 2 x 20 2 y 4 3 56 18 22 19 
