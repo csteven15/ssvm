@@ -1,4 +1,9 @@
+const cc = 15, c3 = 27;
 var x, y, z, a, b, c, d, e, f, g;
 begin
-	x := y + 56;
+	x := 3*(y + (56/2));
+	y := 32;;;;;;;;;;;
+	if x < (y+6)+2 then begin
+		z := 4
+	end
 end.

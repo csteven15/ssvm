@@ -74,6 +74,8 @@ void error(int code, int token)
 		printf("The input file is too large.\n");
 	if (code == 27)
 		printf("Call must be followed by an identifier for a procedure.");
+	if (code == 28)
+		printf("Expected a factor, did not find one!");
 
 	exit(1);
 }
@@ -386,6 +388,10 @@ void doTheAwesomeParsingAndCodeGenerating();
 void program();
 void block();
 void statement();
+void condition();
+void expression();
+void term();
+void factor();
 
 void doTheAwesomeParsingAndCodeGenerating()
 {
@@ -394,6 +400,7 @@ void doTheAwesomeParsingAndCodeGenerating()
 
 void program()
 {
+	int start = curToken;
 	block();
 	//If current token is NOT a period
 	if (getTokenType(curToken) != periodsym)
@@ -401,18 +408,18 @@ void program()
 		//Program must end with a period
 		error(9, curToken);
 	}
-	curToken++;
+	printf("Got program from %d-%d\n", start, curToken);
 }
 
 //TODO: ask about this structure of unchained ifs
 void block()
 {
+	int start = curToken;
 	//A block can be a constant-declaration, variable declaration, or a statement
 
 	//If current token is a constant symbol...
 	if (getTokenType(curToken) == constsym)
 	{
-		//constdel();
 		do
 		{
 			curToken++;
@@ -453,7 +460,6 @@ void block()
 	//If we've got a variable declaration
 	if (getTokenType(curToken) == varsym)
 	{
-		//vardel();
 		do
 		{
 			curToken++;
@@ -523,78 +529,13 @@ void block()
 
 	//And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
 	statement();
-	curToken++;
+	
+	printf("Got block from %d-%d\n", start, curToken);
 }
-
-/* ignore from powerpoint
-void constdel()
-{
-	do
-	{
-		curToken++;
-		if (getTokenType(curToken) != identsym)
-		{
-			//Expected an identifier after constsym...
-			error(4, curToken);
-		}
-		curToken++;
-		curToken++;
-		if (getTokenType(curToken) != eqlsym)
-		{
-			//Expected equal symbol (NOT become symbol because it's constant declaration)
-			error(3, curToken);
-		}
-		curToken++;
-		if (getTokenType(curToken) != numbersym)
-		{
-			//Expected a number!
-			error(2, curToken);
-		}
-		addToSymbolTable(1, curToken - 2, curToken, 0, 0);
-		curToken++;
-		curToken++;
-	}
-	while (getTokenType(curToken) == commasym)
-
-	curToken++;
-	if (getTokenType(curToken) != semicolonsym)
-	{
-		//Expected a semicolon!
-		error(5, curToken);
-	}
-	curToken++;
-
-}
-
-void vardel()
-{
-	do
-	{
-		curToken++;
-		if (getTokenType(curToken) != identsym)
-		{
-			//Following var we expected an identifier...
-			error(4, curToken);
-		}
-		//Double skip because following the identsym is the identifier itself...
-		curToken++;
-		curToken++;
-		addToSymbolTable(2, curToken - 2, curToken - 1, 0, 0);
-	}
-	while(getTokenType(curToken) == commasym);
-
-	//Now we expect a semicolon...
-	if (getTokenType(curToken) != semicolonsym)
-	{
-		//Missing a semicolon!
-		error(5, curToken);
-	}
-	curToken++;
-}
-*/
 
 void statement()
 {
+	int start = curToken;
 	//Statement could just be like x := 6;
 	if (getTokenType(curToken) == identsym)
 	{
@@ -662,10 +603,13 @@ void statement()
 		}
 		curToken++;
 		statement();
+	}
+	printf("Got statement from %d-%d\n", start, curToken);
 }
 
 void condition()
 {
+	int start = curToken;
 	if (getTokenType(curToken) == oddsym)
 	{
 		curToken++;
@@ -674,48 +618,58 @@ void condition()
 	else
 	{
 		expression();
-		if (getTokenType(curToken) != eqlsym || getTokenType(curToken) != neqsym || getTokenType(curToken) != lesssym || getTokenType(curToken) != leqsym || getTokenType(curToken) !=gtrsym || getTokenType(curToken) != geqsym)
+		if (getTokenType(curToken) != eqlsym && getTokenType(curToken) != neqsym && getTokenType(curToken) != lesssym && getTokenType(curToken) != leqsym && getTokenType(curToken) !=gtrsym && getTokenType(curToken) != geqsym)
 		{
 			//Looking for relational symbol
 			error(20, curToken);
 		}
 		curToken++;
-		expresssion();
+		expression();
 	}
+	printf("Got condition from %d-%d\n", start, curToken);
 }
 
-void expresssion()
+void expression()
 {
+	int start = curToken;
 	if (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)
 	{
 		curToken++;
-		term();
 	}
+	term();
 	while (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)
 	{
 		curToken++;
 		term();
 	}
+	printf("Got expression from %d-%d\n", start, curToken);
 }
 
 void term()
 {
+	int start = curToken;
 	factor();
 	while (getTokenType(curToken) == multsym || getTokenType(curToken) == slashsym)
 	{
 		curToken++;
 		factor();
 	}
+	printf("Got term from %d-%d\n", start, curToken);
 }
 
 void factor()
 {
+	int start = curToken;
 	if (getTokenType(curToken) == identsym)
 	{
+		//Because we saw an identsym we must also skip the identifier itself...
+		curToken++;
 		curToken++;
 	}
 	else if (getTokenType(curToken) == numbersym)
 	{
+		//Because we saw a numbersym we must also skip the number itself...
+		curToken++;
 		curToken++;
 	}
 	else if (getTokenType(curToken) == lparentsym)
@@ -731,8 +685,10 @@ void factor()
 	}
 	else
 	{
-		//error()
+		//Expected a factor, did not find one.
+		error(28, curToken);
 	}
+	printf("Got factor from %d-%d\n", start, curToken);
 }
 
 
