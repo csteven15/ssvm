@@ -8,6 +8,7 @@
 */
 #define MAX_INPUT_SIZE 32768
 #define MAX_TOKEN_SIZE 64
+#define MAX_SYMBOL_TABLE_SIZE 256
 
 // --------------------------------------------------Begin Random Additional Code--------------------------------------------------
 
@@ -70,6 +71,8 @@ void error(int code, int token)
 		printf("This number is too large.\n");
 	if (code == 26)
 		printf("The input file is too large.\n");
+	if (code == 27)
+		printf("Call must be followed by an identifier for a procedure.");
 	
 	exit(1);
 }
@@ -277,6 +280,92 @@ int elsesym = 33;
 
 // --------------------------------------------------End Token List Management Code--------------------------------------------------
 
+// --------------------------------------------------Begin Symbol Table Code--------------------------------------------------
+
+typedef struct symbol
+{
+	int kind;
+	char name[12]; // Up to 11 characters, plus one for null terminator
+	int val;
+	int level;
+	int addr;
+} 
+symbol;
+
+symbol symbolTable[MAX_SYMBOL_TABLE_SIZE];
+
+void clearSymbolTable()
+{
+	for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
+	{
+		symbolTable[i].kind = -1;
+		for(int c = 0; c < 12; c++)
+		{
+			symbolTable[i].name[c] = '\0';
+		}
+		symbolTable[i].val = -1;
+		symbolTable[i].level = -1;
+		symbolTable[i].addr = -1;
+	}
+}
+
+/*
+	This method returns the index in the symbol table of the symbol
+	that has the name of name. Returns -1 if the symbol does not
+	exist in the symbol table.
+*/
+int findSymbolByName(char * name)
+{
+	for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
+	{
+		if (strcmp(name, symbolTable[i].name) == 0)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+/*
+	This method puts the symbol [s] in the first available spot in the symbol
+	table. Returns 1 if there was a spot, and 0 if the symbol table was full.
+*/
+int addSymbol(symbol s)
+{
+	for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
+	{
+		if (symbolTable[i].kind == -1)
+		{
+			//This is a valid spot.
+			symbolTable[i].kind = s.kind;
+			strcpy(symbolTable[i].name, s.name);
+			symbolTable[i].val = s.val;
+			symbolTable[i].level = s.level;
+			symbolTable[i].addr = s.addr;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+/*
+	This method prints out the symbol table.
+*/
+void printSymbolTable()
+{
+	printf("Symbol table:\n");
+	for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
+	{
+		if (symbolTable[i].kind != -1)
+		{
+			printf("Entry at %d:\n\tkind = %d\n\tname = %s\n\tval = %d\n\tlevel = %d\n\taddr = %d\n", i, symbolTable[i].kind, symbolTable[i].name, symbolTable[i].val, symbolTable[i].level, symbolTable[i].addr);
+		}
+	}
+	printf("\n");
+}
+
+// --------------------------------------------------End Symbol Table Code--------------------------------------------------
+
 // --------------------------------------------------Begin Parser/Code Generator Code--------------------------------------------------
 
 /*
@@ -435,8 +524,77 @@ void block()
 
 void statement()
 {
-	//blah blah parse statement
+	//Statement could just be like x := 6;
+	if (getTokenType(curToken) == identsym)
+	{
+		//Double skip because after identsym is the identifier itself...
+		curToken++;
+		curToken++;
+		if (getTokenType(curToken) != becomesym)
+		{
+			//Must be assignment statement
+			error(13, curToken);
+		}
+		
+		curToken++;
+		
+		//Parse an expression...
+		expression();
+	}
+	else if (getTokenType(curToken) == callsym)
+	{
+		curToken++;
+		if (getTokenType(curToken) != identsym)
+		{
+			error(27, curToken);
+		}
+		//Double increment because after identsym is the identifier itself...
+		curToken++;
+		curToken++;
+	}
+	else if (getTokenType(curToken) == beginsym)
+	{
+		curToken++;
+		statement();
+		while(getTokenType(curToken) == semicolonsym)
+		{
+			curToken++;
+			statement();
+		}
+		if (getTokenType(curToken) != endsym)
+		{
+			//We were expecting an endsym after all of those statements...
+			error(19, curToken);
+		}
+		curToken++;
+	}
+	else if (getTokenType(curToken) == ifsym)
+	{
+		curToken++;
+		condition();
+		if (getTokenType(curToken) != thensym)
+		{
+			//should have been a then after the condition of the if...
+			error(16, curToken);
+		}
+		curToken++;
+		statement();	
+	}
+	else if (getTokenType(curToken) == whilesym)
+	{
+		curToken++;
+		condition();
+		if (getTokenType(curToken) != dosym)
+		{
+			//Expected a do after condition for while
+			error(18, curToken);
+		}
+		curToken++;
+		statement();
+	}
 }
+
+
 
 // --------------------------------------------------End Parser/Code Generator Code--------------------------------------------------
 
@@ -453,6 +611,7 @@ int main()
 	readInputFile();
 	populateTokenList();
 	printTokenList();
+	clearSymbolTable();
 	doTheAwesomeParsingAndCodeGenerating();
 	
 	return 0;
