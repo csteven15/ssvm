@@ -87,6 +87,7 @@ int mapReserved(int spotInReserved)
 		return readsym;
 	if (spotInReserved == 12)
 		return writesym;
+    return -1;
 }
 
 //TODO nullsym = 1?????
@@ -125,7 +126,7 @@ int mapSymbol(char * symbol)
 		return geqsym;
 	if (strcmp(symbol, ":=") == 0)
 		return becomesym;
-
+    return -1;
 }
 
 //~~~Character Manipulation Methods~~~
