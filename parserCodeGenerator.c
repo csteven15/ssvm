@@ -918,6 +918,7 @@ int main()
     openFiles();
     readInputFile();
     populateTokenList();
+    printTokenList();
     clearSymbolTable();
     clearCodeArray();
     doTheAwesomeParsingAndCodeGenerating();
