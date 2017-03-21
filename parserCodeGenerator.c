@@ -73,9 +73,17 @@ void error(int code, int token)
     if (code == 26)
         printf("The input file is too large.\n");
     if (code == 27)
-        printf("Call must be followed by an identifier for a procedure.");
+        printf("Call must be followed by an identifier for a procedure.\n");
     if (code == 28)
-        printf("Expected a factor, did not find one!");
+        printf("Expected a factor, did not find one!\n");
+    if (code == 29)
+    	printf("Too many symbols, or a conflicting symbol was found!\n");
+    if (code == 30)
+    	printf("Read and write require an identifier after them!\n");
+    if (code == 31)
+    	printf("You can only read into a variable!");
+    if (code == 32)
+    	printf("You can only write a variable or constant!");
 
     exit(1);
 }
@@ -330,11 +338,31 @@ int findSymbolByName(char * name)
 }
 
 /*
+	Returns 1 if the symbol table had an entry with the name [name],
+	and the level [level].
+*/
+int containsConflict(char * name, int level)
+{
+	for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
+    {
+        if (strcmp(name, symbolTable[i].name) == 0 && symbolTable[i].level == level)
+        {
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/*
 	This method puts the symbol [s] in the first available spot in the symbol
-	table. Returns 1 if there was a spot, and 0 if the symbol table was full.
+	table. Returns 1 if there was a spot, and 0 if the symbol table was full
+	or the symbol already existed at that level.
  */
 int addSymbol(symbol s)
 {
+	//If the symbol you are trying to add already existed, fail!
+	if (containsConflict(s.name, s.level))
+		return 0;
     for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
     {
         if (symbolTable[i].kind == -1)
@@ -371,17 +399,11 @@ void printSymbolTable()
 
 // --------------------------------------------------Begin Parser/Code Generator Code--------------------------------------------------
 
-/*
-	This variable represents, globally, and at all times, the NEXT token
-	to be evaluated. Thus, to get the next token to be evaluated, just
-	use tokenList[curToken], which will be the string containing the next
-	token to be evaluated. Use curToken++ to move up one token, etc...
 
-	Also! There is a method above called getTokenType that takes an index,
-	which curToken is, and returns the type (number) of that token. It is
-	useful for checking if your token is a periodsym, for example, by doing
-	if (getTokenType(curToken) == periodsym).
- */
+/*
+	This variable represents the next open register at all times.
+*/
+ int rc = 0;
 
 typedef struct code
 {
@@ -394,8 +416,48 @@ typedef struct code
 code code_array[MAX_INPUT_SIZE]; // change later
 int cx = 0;
 
+void clearCodeArray()
+{
+	for(int i = 0; i < MAX_INPUT_SIZE; i++)
+	{
+		code_array[i].op = -1;
+		code_array[i].r = -1;
+		code_array[i].l = -1;
+		code_array[i].m = -1;
+	}
+}
+
+void printCodeArray()
+{
+	printf("Code Generation:\n");
+	for(int i = 0; i < MAX_INPUT_SIZE; i++)
+	{
+		if (code_array[i].op == -1)
+		{
+			break;
+		}
+		else
+		{
+			printf("Code Entry %d: %d %d %d %d\n", i, code_array[i].op, code_array[i].r, code_array[i].l, code_array[i].m);
+		}
+	}
+}
+
+/*
+	This variable represents, globally, and at all times, the NEXT token
+	to be evaluated. Thus, to get the next token to be evaluated, just
+	use tokenList[curToken], which will be the string containing the next
+	token to be evaluated. Use curToken++ to move up one token, etc...
+
+	Also! There is a method above called getTokenType that takes an index,
+	which curToken is, and returns the type (number) of that token. It is
+	useful for checking if your token is a periodsym, for example, by doing
+	if (getTokenType(curToken) == periodsym).
+ */
+ 
 int curToken = 0;
 int var_level = 1;
+int addressCounter = 1;
 
 void emit(int op, int r, int l, int m);
 void doTheAwesomeParsingAndCodeGenerating();
@@ -463,10 +525,10 @@ void block()
                 //Expected an identifier after constsym...
                 error(4, curToken);
             }
+            curToken++;
 			//Symbol table kind
             s.kind = 1;
-            //Double skip because following identsym is the identifier name itself...
-            curToken++;
+            
 			//Symbol table identifier
             strcpy(s.name, tokenList[curToken]);
             curToken++;
@@ -481,13 +543,23 @@ void block()
                 //Expected a number!
                 error(2, curToken);
             }
-            //Double skip because following numbersym is the number itself...
+            
             curToken++;
 			//Symbol table value
             s.val = atoi(tokenList[curToken]);
+            s.level = 1;
+            s.addr = addressCounter;
+            addressCounter++;
             curToken++;
 			if (!addSymbol(s))
-            	printf("Symbol table is full.\n");
+			{
+				//Symbol table full or conflicting symbol!
+            	error(29, curToken);
+            }
+            
+            emit(6, 0, 0, 1); // increment our stack size in the vm by 1 to allocate the space for this thing..
+            emit(1, rc, 0, s.val);  // load into register!
+            emit(4, rc, 0, s.addr); // store onto vm stack!
         }
         while(getTokenType(curToken) == commasym);
 
@@ -511,22 +583,30 @@ void block()
                 //Following var we expected an identifier...
                 error(4, curToken);
             }
+            curToken++;
 			//Symbol table kind
 			s.kind = 2;
-            //Double skip because following the identsym is the identifier itself...
-            curToken++;
 			//Symbol table identifier
 			strcpy(s.name, tokenList[curToken]);
 			//Symbol table level
-			s.level = var_level;
-			s.val = 0; //Because they're variables
+			s.level = 1;
+			s.val = 0; //Because they're variables which are not assigned initially!
+			s.addr = addressCounter;
+			addressCounter++;
 			if (!addSymbol(s))
-            	printf("Symbol table is full.\n");
+            {
+            	//Symbol table full or conflicting symbol!
+            	error(29, curToken);
+            }
             curToken++;
-
+            
+            //Now I have added a new symbol to my table and need to plop it into the vm stack...
+            emit(6, 0, 0, 1); // increment our stack size in the vm by 1 to allocate the space for this thing..
+            emit(1, rc, 0, s.val); // load into register!
+            emit(4, rc, 0, s.addr); // store whats in register into vm stack!
         }
         while(getTokenType(curToken) == commasym);
-		var_level++; //???????????
+	
 
         //Now we expect a semicolon...
         if (getTokenType(curToken) != semicolonsym)
@@ -537,6 +617,7 @@ void block()
         curToken++;
     }
 
+	//TODO: Procedures not yet supported
     while(getTokenType(curToken) == procsym)
     {
         curToken++;
@@ -664,6 +745,70 @@ void statement()
         curToken++;
         statement();
     }
+    else if (getTokenType(curToken) == readsym)
+    {
+    	curToken++;
+    	
+    	//Now, I expect an identifier!
+    	if (getTokenType(curToken) != identsym)
+    	{
+    		//No identifier whaaat?!?!?
+    		error(30, curToken);
+    	}
+    	
+    	//Okay, we have an identifier!
+    	curToken++;
+    	
+    	//Does the identifier exist?
+    	int place = findSymbolByName(tokenList[curToken]);
+    	if (place == -1)
+    	{
+    		//Undeclared identifier!
+    		error(11, curToken);
+    	}
+    	if (symbolTable[place].kind != 2)
+    	{
+    		//Can't read into a procedure or constant!
+    		error(31, curToken);
+    	}
+    	
+    	//Okay, it exists, and has no issues! We need to generate code to read into this symbol...
+    	
+    	
+    	curToken++;
+    }
+    else if (getTokenType(curToken) == writesym)
+    {
+    	curToken++;
+    	
+    	//Now, I expect an identifier!
+    	if (getTokenType(curToken) != identsym)
+    	{
+    		//No identifier whaaat?!?!?
+    		error(30, curToken);
+    	}
+    	
+    	//Okay, we have an identifier!
+    	curToken++;
+    	
+    	//Does the identifier exist?
+    	int place = findSymbolByName(tokenList[curToken]);
+    	if (place == -1)
+    	{
+    		//Undeclared identifier!
+    		error(11, curToken);
+    	}
+    	if (symbolTable[place].kind != 2 && symbolTable[place].kind != 1)
+    	{
+    		//Can't write out a procedure!
+    		error(32, curToken);
+    	}
+    	
+    	//Okay, it exists, and has no issues! We need to generate code to write to the screen this symbol...
+    	
+    	
+    	curToken++;
+    }
     printf("Got statement from %d-%d\n", start, curToken);
 }
 
@@ -771,10 +916,11 @@ int main()
     openFiles();
     readInputFile();
     populateTokenList();
-    printTokenList();
     clearSymbolTable();
+    clearCodeArray();
     doTheAwesomeParsingAndCodeGenerating();
 	printSymbolTable();
+	printCodeArray();
 
     return 0;
 }

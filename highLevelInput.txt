@@ -1,9 +1,2 @@
-const cc = 15, c3 = 27;
-var x, y, z, a, b, c, d, e, f, g;
-begin
-	x := 3*(y + (56/2));
-	y := 32;
-	if x < (y+6)+2 then begin
-		z := 4
-	end
-end.
+const x = 6, y = 19;
+var hello, coolvar;.
