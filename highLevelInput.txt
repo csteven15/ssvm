@@ -1,2 +1,3 @@
 const x = 6, y = 19;
-var hello, coolvar;.
+var hello, coolvar;
+write x.
