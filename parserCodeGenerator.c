@@ -773,7 +773,8 @@ void statement()
     	}
     	
     	//Okay, it exists, and has no issues! We need to generate code to read into this symbol...
-    	
+    	emit(10, rc, 0, 2); // Read input into register rc 
+    	emit(4, rc, 0, symbolTable[place].addr); // Store the value now in register rc into the address of the ident
     	
     	curToken++;
     }
@@ -805,7 +806,8 @@ void statement()
     	}
     	
     	//Okay, it exists, and has no issues! We need to generate code to write to the screen this symbol...
-    	
+    	emit(3, rc, 0, symbolTable[place].addr); // Load into rc what is at the address of the symbol we are talking about
+    	emit(9, rc, 0, 1); // Print what is in rc to the screen
     	
     	curToken++;
     }

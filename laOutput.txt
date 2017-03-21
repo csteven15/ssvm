@@ -1,6 +1,7 @@
 Source Program:
 const x = 6, y = 19;
-var hello, coolvar;.
+var hello, coolvar;
+write x.
 
 Lexeme Table:
 lexeme       token type
@@ -18,7 +19,9 @@ hello        2
 ,            17
 coolvar      2
 ;            18
+write        31
+x            2
 .            19
 
 Lexeme List:
-28 2 x 9 3 6 17 2 y 9 3 19 18 29 2 hello 17 2 coolvar 18 19 
+28 2 x 9 3 6 17 2 y 9 3 19 18 29 2 hello 17 2 coolvar 18 31 2 x 19 
