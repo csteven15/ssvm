@@ -1,0 +1,10 @@
+COMPLETE-does LA support read, write, and it definietely needs odd.
+	+Yes, LA does support them all now.
+
+COMPLETE-implement else
+	+This is not required, and actually not even allowed in this project.
+
+-redundant enforcement of identifier lengths
+
+-what about that nullsym tho
+	+Just don't tbh

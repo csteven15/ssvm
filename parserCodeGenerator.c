@@ -113,10 +113,10 @@ FILE * outputFile;
 	the variables inputFile and outputFile with meaningful
 	addresses.
  */
-void openFiles()
+void openFiles(char* inputFilePath, char* outputFilePath)
 {
-    inputFile = fopen("laOutput.txt", "r");
-    outputFile = fopen("output.txt", "w");
+    inputFile = fopen(inputFilePath, "r");
+    outputFile = fopen(outputFilePath, "w");
 
 }
 // --------------------------------------------------End File Management Code--------------------------------------------------
@@ -1074,10 +1074,15 @@ void factor()
  */
 
 
-int main()
+int main(int argc, char** argv)
 {
-    //TODO: Later, we can make the arguments determine the input and output file paths, but for now it's hardcoded as input.txt and output.txt.
-    openFiles();
+	if (argc != 3)
+	{
+		printf("Invalid arguments to parser code generator!\nUSAGE: ./parserCodeGenerator [lexical analyzer file] [code output file]\n");
+		return 1;
+	}
+	
+    openFiles(argv[1], argv[2]);
     readInputFile();
     populateTokenList();
     printTokenList();

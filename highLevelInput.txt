@@ -1,9 +1,0 @@
-var x;
-begin
-	read x;
-	while odd x do
-	begin
-		write x;
-		read x;
-	end
-end.
