@@ -1,3 +1,9 @@
-const x = 6, y = 19;
-var hello, coolvar;
-write x.
+var x;
+begin
+	read x;
+	while odd x do
+	begin
+		write x;
+		read x;
+	end
+end.
