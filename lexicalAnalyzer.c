@@ -31,7 +31,7 @@ varsym = 29, procsym = 30, writesym = 31, readsym = 32, elsesym = 33;
 
 
 char symbols[] = {'+', '-', '*', '/', '(', ')', '=', ',', '.', '<', '>', ';', ':'};
-char reserved[13][32] = {
+char reserved[14][32] = {
 "const",
 "var",
 "procedure",
@@ -44,12 +44,13 @@ char reserved[13][32] = {
 "while",
 "do",
 "read",
-"write"
+"write",
+"odd"
 };
 
 int reservedIndex(char * identifier)
 {
-	for(int i = 0; i < 13; i++)
+	for(int i = 0; i < 14; i++)
 	{
 		if (strcmp(reserved[i], identifier) == 0)
 		{
@@ -87,6 +88,8 @@ int mapReserved(int spotInReserved)
 		return readsym;
 	if (spotInReserved == 12)
 		return writesym;
+	if (spotInReserved == 13)
+		return oddsym;
     return -1;
 }
 

@@ -9,6 +9,7 @@
 #define MAX_INPUT_SIZE 32768
 #define MAX_TOKEN_SIZE 64
 #define MAX_SYMBOL_TABLE_SIZE 256
+#define MAX_NUMBER_SIZE 5
 
 
 // --------------------------------------------------Begin Random Additional Code--------------------------------------------------
@@ -443,6 +444,21 @@ void printCodeArray()
 	}
 }
 
+void writeCodeArray()
+{
+	for(int i = 0; i < MAX_INPUT_SIZE; i++)
+	{
+		if (code_array[i].op == -1)
+		{
+			break;
+		}
+		else
+		{
+			fprintf(outputFile, "%d %d %d %d\n", code_array[i].op, code_array[i].r, code_array[i].l, code_array[i].m);
+		}
+	}
+}
+
 /*
 	This variable represents, globally, and at all times, the NEXT token
 	to be evaluated. Thus, to get the next token to be evaluated, just
@@ -473,8 +489,8 @@ void emit(int op, int r, int l, int m)
 {
     if (cx > MAX_INPUT_SIZE)
     {
-        //error(25, curToken); error
-
+    	//Too much code generated!
+        error(26, curToken);
     }
     else
     {
@@ -680,19 +696,37 @@ void statement()
     //Statement could just be like x := 6;
     if (getTokenType(curToken) == identsym)
     {
-        //Double skip because after identsym is the identifier itself...
         curToken++;
+        
+        int place = findSymbolByName(tokenList[curToken]);
+        if (place == -1)
+        {
+        	//Could not find symbol
+        	error(11, curToken);
+        }
+        if (symbolTable[place].kind != 2)
+        {
+        	//Cannot assign to procedure or constant
+        	error(12, curToken);
+        }
+        
         curToken++;
+        
         if (getTokenType(curToken) != becomesym)
         {
             //Must be assignment statement
             error(13, curToken);
         }
+        
+        
 
         curToken++;
 
         //Parse an expression...
         expression();
+        
+        //Put the resulting expression into the variable
+        emit(4, rc-1, 0, symbolTable[place].addr);
     }
     else if (getTokenType(curToken) == callsym)
     {
@@ -724,7 +758,13 @@ void statement()
     else if (getTokenType(curToken) == ifsym)
     {
         curToken++;
+        
+        // rc-1 will hold the condition's result
         condition();
+        
+        int jpc = cx;
+        emit(8, rc-1, 0, 0);
+        
         if (getTokenType(curToken) != thensym)
         {
             //should have been a then after the condition of the if...
@@ -732,11 +772,21 @@ void statement()
         }
         curToken++;
         statement();
+        
+        code_array[jpc].m = cx;
     }
     else if (getTokenType(curToken) == whilesym)
     {
         curToken++;
+        
+        int checkStart = cx;
+        
+        // rc-1 will hold the condition's result
         condition();
+        
+        int jpc = cx;
+        emit(8, rc-1, 0, 0);
+        
         if (getTokenType(curToken) != dosym)
         {
             //Expected a do after condition for while
@@ -744,6 +794,10 @@ void statement()
         }
         curToken++;
         statement();
+        
+        emit(7, 0, 0, checkStart);
+        
+        code_array[jpc].m = cx;
     }
     else if (getTokenType(curToken) == readsym)
     {
@@ -820,36 +874,93 @@ void condition()
     if (getTokenType(curToken) == oddsym)
     {
         curToken++;
+        
+        // rc-1 holds the result of expression
         expression();
+        
+        emit(17, rc-1, 0, 0);
     }
     else
     {
         expression();
+        
         if (getTokenType(curToken) != eqlsym && getTokenType(curToken) != neqsym && getTokenType(curToken) != lesssym && getTokenType(curToken) != leqsym && getTokenType(curToken) !=gtrsym && getTokenType(curToken) != geqsym)
         {
             //Looking for relational symbol
             error(20, curToken);
         }
+        int relop = getTokenType(curToken);
         curToken++;
+        
         expression();
+        
+        //At this point, rc-2 has the first expression, and rc-1 has the second expression
+        
+        if (relop == eqlsym)
+        {
+        	emit(19, rc-2, rc-2, rc-1);
+        }
+        else if (relop == neqsym)
+        {
+        	emit(20, rc-2, rc-2, rc-1);
+        }
+        else if (relop == lesssym)
+        {
+        	emit(21, rc-2, rc-2, rc-1);
+        }
+        else if (relop == leqsym)
+        {
+        	emit(22, rc-2, rc-2, rc-1);
+        }
+        else if (relop == gtrsym)
+        {
+        	emit(23, rc-2, rc-2, rc-1);
+        }
+        else if (relop == geqsym)
+        {
+        	emit(24, rc-2, rc-2, rc-1);
+        }
+        rc = rc-1;
     }
     printf("Got condition from %d-%d\n", start, curToken);
 }
 
 void expression()
 {
-    int adop;
     int start = curToken;
+	//Assume it's just a normal and positive expression...
+    int adop = plussym;
     if (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)
     {
-        adop = curToken;
+    	//If it was a minus sym, then here we'd set adop to minussym.
+        adop = getTokenType(curToken);
         curToken++;
     }
+    
+    //Load a term! After this a term will be in rc-1.
     term();
+    
+    if (adop == minussym)
+    {
+    	emit(12, rc-1, 0, 0);
+    }
+    
     while (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)
     {
+    	//Remember the operation...
+    	int operation = getTokenType(curToken);
+    	
+    	//Load the next term...
         curToken++;
         term();
+        
+        //Apply the operation!
+        if (operation == plussym)
+        	emit(13, rc-2, rc-2, rc-1);
+        else
+        	emit(14, rc-2, rc-2, rc-1);
+        rc = rc-1;
+        	
     }
     printf("Got expression from %d-%d\n", start, curToken);
 }
@@ -857,12 +968,29 @@ void expression()
 void term()
 {
     int start = curToken;
+    
+    //This will get us a factor into register rc-1.
     factor();
+    
+    //Do we have more terms factors?
     while (getTokenType(curToken) == multsym || getTokenType(curToken) == slashsym)
     {
+    	//Remember the operation...
+    	int operation = getTokenType(curToken);
+    	
+    	//Load the next factor...
         curToken++;
         factor();
+        
+        //Perform the operation on rc-2 and rc-1 and store into rc-2 and set rc to rc-1!
+        if (operation == multsym)
+        	emit(15, rc-2, rc-2, rc-1);
+        else
+        	emit(16, rc-2, rc-2, rc-1);
+        rc = rc-1;
+        
     }
+    
     printf("Got term from %d-%d\n", start, curToken);
 }
 
@@ -871,20 +999,54 @@ void factor()
     int start = curToken;
     if (getTokenType(curToken) == identsym)
     {
-        //Because we saw an identsym we must also skip the identifier itself...
         curToken++;
+        //Now load whatever that identifier is onto the "register stack"
+        
+        //Make sure the identifier is valid...
+        int place = findSymbolByName(tokenList[curToken]);
+        if (place == -1)
+        {
+        	//Undeclared identifier!
+        	error(11, curToken);
+        }
+        if (symbolTable[place].kind != 1 && symbolTable[place].kind != 2)
+        {
+        	//Factor can't be a procedure!
+        	error(21, curToken);
+        }
+        
+        //Ok, valid identifier, so now emit away!
+        emit(3, rc, 0, symbolTable[place].addr); // Load into register rc the value at address of the identifier...
+        rc++;									 // Let the world know that we used a register
+        
         curToken++;
     }
     else if (getTokenType(curToken) == numbersym)
     {
-        //Because we saw a numbersym we must also skip the number itself...
         curToken++;
+        
+        if (strlen(tokenList[curToken]) > MAX_NUMBER_SIZE)
+        {
+        	//Number too large!
+        	error(25, curToken);
+        }
+        
+        //Get the number's literal value...
+        int literalValue = atoi(tokenList[curToken]);
+        
+        emit(1, rc, 0, literalValue); // Load immediately into register rc literalValue
+        rc++;						  // Let the world know that we used a register
+        
+        
         curToken++;
     }
     else if (getTokenType(curToken) == lparentsym)
     {
         curToken++;
+        
+        //Expression should leave us one register value with the answer!
         expression();
+        
         if (getTokenType(curToken) != rparentsym)
         {
             //Expect )
@@ -924,6 +1086,7 @@ int main()
     doTheAwesomeParsingAndCodeGenerating();
 	printSymbolTable();
 	printCodeArray();
+	writeCodeArray();
 
     return 0;
 }
