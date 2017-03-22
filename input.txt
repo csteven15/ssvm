@@ -1,0 +1,11 @@
+var input, ans;
+begin
+	read input;
+	ans := 1;
+	while input > 0 do
+	begin
+		ans := ans * input;
+		input := input - 1;
+	end;
+	write ans;
+end.

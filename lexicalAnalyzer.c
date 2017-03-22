@@ -185,26 +185,6 @@ int isValid(char theChar)
 	return isAlphanumeric(theChar) || isSymbol(theChar) || isInvisible(theChar) || theChar == '\0';
 }
 
-//Allows a user to test the character manipulation methods above
-void runCharacterTester()
-{
-	char dump;
-	while(1)
-	{
-		printf("Enter a character to test:");
-		char theChar;
-		scanf("%c", &theChar);
-		scanf("%c", &dump);
-		printf("%c isUpper is %d\n", theChar, isUpper(theChar));
-		printf("%c isLower is %d\n", theChar, isLower(theChar));
-		printf("%c isAlpha is %d\n", theChar, isAlpha(theChar));
-		printf("%c isDigit is %d\n", theChar, isDigit(theChar));
-		printf("%c isAlphanumeric is %d\n", theChar, isAlphanumeric(theChar));
-		printf("%c isInvisible is %d\n", theChar, isInvisible(theChar));
-		printf("%c isSymbol is %d\n\n", theChar, isSymbol(theChar));
-	}
-}
-
 //~~~Error state stuff~~~
 
 void throwError(char * message)
@@ -317,7 +297,6 @@ void insertStrToLexemeList(char * identifier)
 
 void processIdentifier(char * identifier)
 {
-	printf("Processing identifier \"%s\"\n", identifier);
 	int index = reservedIndex(identifier);
 	if (index > -1)
 	{
@@ -337,7 +316,6 @@ void processIdentifier(char * identifier)
 
 void processNumber(char * num)
 {
-	printf("Processing number \"%s\"\n", num);
 	insertToLexemeTable(num, 3);
 	insertIntToLexemeList(3);
 	insertStrToLexemeList(num);
@@ -345,15 +323,12 @@ void processNumber(char * num)
 
 void processSymbol(char * sym)
 {
-	printf("Processing symbol \"%s\"\n", sym);
 	insertToLexemeTable(sym, mapSymbol(sym));
 	insertIntToLexemeList(mapSymbol(sym));
 }
 
 void processText()
 {
-	printf("Beginning lexical analysis...\n");
-
 	//Clear out the output arrays...
 	clearLexemeOutput();
 
@@ -506,7 +481,6 @@ void processText()
 			throwError("Invalid state!");
 		}
 	}
-	printf("Reached end of file. See output.txt for output!\n");
 
 	//Print results to output file...
 	fprintf(outFile, "%s\n", lexemeTable);
@@ -520,7 +494,7 @@ void echoInput()
 
 int main(int argc, char ** argv)
 {
-	if (argc < 3)
+	if (argc != 3)
 	{
 		printf("Invalid arguments for lexical analyzer!\nUSAGE: ./lexicalAnalyzer [input file] [output file]\n");
 		return 1;

@@ -1,0 +1,11 @@
+gcc -o lexicalAnalyzer lexicalAnalyzer.c
+gcc -o parserCodeGenerator parserCodeGenerator.c
+gcc -o vm vm.c
+./lexicalAnalyzer input.txt lao
+./parserCodeGenerator lao pcgo
+echo ""
+echo "Running on VM:"
+./vm pcgo vmo
+
+
+gcc -o lexicalAnalyzer lexicalAnalyzer.c && gcc -o parserCodeGenerator parserCodeGenerator.c && gcc -o vm vm.c && ./lexicalAnalyzer input.txt lao && ./parserCodeGenerator lao pcgo && echo "" && echo "Running on VM:" && ./vm pcgo vmo

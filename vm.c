@@ -380,7 +380,7 @@ void init(char * codePath, char * outputPath)
 
 int main(int argc, char** argv)
 {
-	if (argc < 3)
+	if (argc != 3)
 	{
 		printf("Invalid arguments to virtual machine!\nUSAGE: ./vm [code file] [output file]\n");
 		return 1;
