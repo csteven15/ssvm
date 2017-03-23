@@ -189,7 +189,9 @@ int isValid(char theChar)
 
 void throwError(char * message)
 {
-	printf("An error with the input caused the process to fail: %s\n", message);
+	FILE * errorFile = fopen("ef", "w");
+	fprintf(errorFile, "An error occurred while running lexical analysis: %s\n", message);
+	fclose(errorFile);
 	exit(0);
 }
 
