@@ -1,7 +1,9 @@
-// Philip Rodriguez
-// ph644520
-// 1/31/2017
-// COP3402 HW 1
+/*
+	COP3402 Homework #3: Parser & Code Generator Assignment
+	3/23/2017
+	Philip Rodriguez & Steven Chen
+	ph644520 & st140537
+*/
 
 #include <stdio.h>
 #include <string.h>
@@ -79,7 +81,7 @@ void printMachineState(int instructionLine)
 	instruction i = code[instructionLine];
 	
 	//Print out everything but the stack...
-	fprintf(outputFile, "%d\t\t%s\t%d\t%d\t%d\t%d\t%d\t%d", instructionLine, opmap[i.op], i.r, i.l, i.m, pc, bp, sp);
+	fprintf(outputFile, "%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d", instructionLine, opmap[i.op], i.r, i.l, i.m, pc, bp, sp);
 	
 	//Now we need to print out the stack...
 	//Since the stack starts at 1 according to the assignment sheet, just print from there...
@@ -283,10 +285,10 @@ void outputPartOne()
 	for(int l = 0; l < codeLength; l++)
 	{
 		strcpy(opstr, opmap[code[l].op]);
-		fprintf(outputFile, "%d\t\t%s\t%d\t%d\t%d\n", l, opstr, code[l].r, code[l].l, code[l].m);
+		fprintf(outputFile, "%d\t%s\t%d\t%d\t%d\n", l, opstr, code[l].r, code[l].l, code[l].m);
 	}
 	
-	fprintf(outputFile, "Initial Values\t\t\tpc\tbp\tsp\n");
+	fprintf(outputFile, "Initial Values\t\t\t\tpc\tbp\tsp\n");
 }
 
 //This populates the global 2D array opmap, and it should be called before opmap is used.

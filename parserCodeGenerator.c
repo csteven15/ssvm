@@ -1,3 +1,10 @@
+/*
+	COP3402 Homework #3: Parser & Code Generator Assignment
+	3/23/2017
+	Philip Rodriguez & Steven Chen
+	ph644520 & st140537
+*/
+
 #include<stdio.h>
 #include<stdlib.h>
 #include<string.h>
@@ -517,6 +524,9 @@ void doTheAwesomeParsingAndCodeGenerating()
 void program()
 {
     int start = curToken;
+    
+    emit(6, 0, 0, 1); //Because bp starts at 1, increment stack size by 1 from the get-go.
+    
     block();
     //If current token is NOT a period
     if (getTokenType(curToken) != periodsym)
@@ -524,7 +534,7 @@ void program()
         //Program must end with a period
         error(9, curToken);
     }
-    printf("Got program from %d-%d\n", start, curToken);
+    //printf("Got program from %d-%d\n", start, curToken);
 
     //SIO
     emit(11, 0, 0, 3);
@@ -662,7 +672,11 @@ void block()
             error(17, curToken);
         }
 		if (!addSymbol(s))
-			printf("Symbol table is full.\n");
+		{
+			//Symbol table full or conflicting symbol!
+        	error(29, curToken);
+        }
+			
         curToken++;
 
         /*
@@ -694,7 +708,7 @@ void block()
     //And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
     statement();
 
-    printf("Got block from %d-%d\n", start, curToken);
+    //printf("Got block from %d-%d\n", start, curToken);
 }
 
 void statement()
@@ -872,7 +886,7 @@ void statement()
     	
     	curToken++;
     }
-    printf("Got statement from %d-%d\n", start, curToken);
+    //printf("Got statement from %d-%d\n", start, curToken);
 }
 
 void condition()
@@ -929,7 +943,7 @@ void condition()
         }
         rc = rc-1;
     }
-    printf("Got condition from %d-%d\n", start, curToken);
+    //printf("Got condition from %d-%d\n", start, curToken);
 }
 
 void expression()
@@ -969,7 +983,7 @@ void expression()
         rc = rc-1;
         	
     }
-    printf("Got expression from %d-%d\n", start, curToken);
+    //printf("Got expression from %d-%d\n", start, curToken);
 }
 
 void term()
@@ -998,7 +1012,7 @@ void term()
         
     }
     
-    printf("Got term from %d-%d\n", start, curToken);
+    //printf("Got term from %d-%d\n", start, curToken);
 }
 
 void factor()
@@ -1066,7 +1080,7 @@ void factor()
         //Expected a factor, did not find one.
         error(28, curToken);
     }
-    printf("Got factor from %d-%d\n", start, curToken);
+    //printf("Got factor from %d-%d\n", start, curToken);
 }
 
 
@@ -1092,12 +1106,9 @@ int main(int argc, char** argv)
     openFiles(argv[1], argv[2]);
     readInputFile();
     populateTokenList();
-    printTokenList();
     clearSymbolTable();
     clearCodeArray();
     doTheAwesomeParsingAndCodeGenerating();
-	printSymbolTable();
-	printCodeArray();
 	writeCodeArray();
 
     return 0;

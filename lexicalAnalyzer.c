@@ -1,10 +1,8 @@
 /*
-
-Philip Rodriguez
-COP3402 HW2
-Lexical Analyzer
-2/19/2016
-
+	COP3402 Homework #3: Parser & Code Generator Assignment
+	3/23/2017
+	Philip Rodriguez & Steven Chen
+	ph644520 & st140537
 */
 
 #include <stdio.h>
@@ -28,6 +26,44 @@ lparentsym = 15, rparentsym = 16, commasym = 17, semicolonsym = 18,
 periodsym = 19, becomesym = 20, beginsym = 21, endsym = 22, ifsym = 23,
 thensym = 24, whilesym = 25, dosym = 26, callsym = 27, constsym = 28,
 varsym = 29, procsym = 30, writesym = 31, readsym = 32, elsesym = 33;
+
+char IRMapping[34][64] = {
+"ZERO",
+"nulsym",
+"identsym",
+"numbersym",
+"plussym",
+"minussym",
+"multsym",
+"slashsym",
+"oddsym",
+"eqlsym",
+"neqsym",
+"lessym",
+"leqsym",
+"gtrsym",
+"geqsym",
+"lparentsym",
+"rparentsym",
+"commasym",
+"semicolonsym",
+"periodsym",
+"becomesym",
+"beginsym",
+"endsym",
+"ifsym",
+"thensym",
+"whilesym",
+"dosym",
+"callsym",
+"constsym",
+"varsym",
+"procsym",
+"writesym",
+"readsym",
+"elsesym",
+
+};
 
 
 char symbols[] = {'+', '-', '*', '/', '(', ')', '=', ',', '.', '<', '>', ';', ':'};
@@ -200,15 +236,23 @@ void throwError(char * message)
 //Our input file
 int ip = 0;
 char inputChars[MAX_CODE_LENGTH];
+int inputCharsSize;
 
 //The output file
 FILE * outFile;
 
 //File operations
 char getChar(int ignoreValidity)
-{
+{	
+	//Make sure this char is even actually existing...
+	if (ip > inputCharsSize)
+	{
+		throwError("Input file ends unexpectedly! (Did you forget to close a comment?)");
+	}
+
 	char nextChar = inputChars[ip];
 	ip++;
+	
 	if (!ignoreValidity && !isValid(nextChar))
 	{
 		throwError("Invalid character encountered!");
@@ -249,6 +293,7 @@ void openFiles(char * inputFile, char * outputFile)
 
 	fseek(inFile, 0, SEEK_END);
 	int inputSize = ftell(inFile)-1;
+	inputCharsSize = inputSize;
 	fseek(inFile, 0, SEEK_SET);
 	int i;
 	for(i = 0; i < inputSize; i++)
@@ -261,6 +306,7 @@ void openFiles(char * inputFile, char * outputFile)
 //~~~Text processing~~~
 char lexemeTable[MAX_CODE_LENGTH];
 char lexemeList[MAX_CODE_LENGTH];
+char symbolicLexemeList[MAX_CODE_LENGTH];
 
 void clearLexemeOutput()
 {
@@ -268,9 +314,11 @@ void clearLexemeOutput()
 	{
 		lexemeTable[i] = '\0';
 		lexemeList[i] = '\0';
+		symbolicLexemeList[i] = '\0';
 	}
 	strcat(lexemeTable, "Lexeme Table:\nlexeme       token type\n");
 	strcat(lexemeList, "Lexeme List:\n");
+	strcat(symbolicLexemeList, "Symbolic Lexeme List:\n");
 }
 
 void insertToLexemeTable(char * lexeme, int tokenType)
@@ -288,6 +336,8 @@ void insertIntToLexemeList(int num)
 	char temp[64];
 	sprintf(temp, "%d ", num);
 	strcat(lexemeList, temp);
+	sprintf(temp, "%s ", IRMapping[num]);
+	strcat(symbolicLexemeList, temp);
 }
 
 void insertStrToLexemeList(char * identifier)
@@ -295,6 +345,7 @@ void insertStrToLexemeList(char * identifier)
 	char temp[64];
 	sprintf(temp, "%s ", identifier);
 	strcat(lexemeList, temp);
+	strcat(symbolicLexemeList, temp);
 }
 
 void processIdentifier(char * identifier)
@@ -485,7 +536,8 @@ void processText()
 	}
 
 	//Print results to output file...
-	fprintf(outFile, "%s\n", lexemeTable);
+	//fprintf(outFile, "%s\n", lexemeTable);
+	fprintf(outFile, "%s\n\n", symbolicLexemeList);
 	fprintf(outFile, "%s", lexemeList);
 }
 
@@ -502,7 +554,7 @@ int main(int argc, char ** argv)
 		return 1;
 	}
 	openFiles(argv[1], argv[2]);
-	echoInput();
+	//echoInput();
 	processText();
 	return 0;
 }
