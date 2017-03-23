@@ -1,3 +1,9 @@
+/*
+	This is a simple program for iteratively
+	computing the value of n! and writing it
+	to the screen. Works only up to 11!.
+*/
+
 var input, ans;
 begin
 	read input;
