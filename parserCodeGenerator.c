@@ -14,77 +14,84 @@
 
 // --------------------------------------------------Begin Random Additional Code--------------------------------------------------
 
+void eprintf(char * message)
+{
+	FILE * errorFile = fopen("ef", "w");
+	fprintf(errorFile, "An error occurred while parsing: %s\n", message);
+	fclose(errorFile);
+}
+
 /*
 	This method halts the program execution after printing an error
 	with code [code].
  */
 void error(int code, int token)
 {
-    printf("Error on token %d: ", token);
+    //printf("Error on token %d: ", token);
     if (code == 1)
-        printf("Use of = instead of :=.\n");
+        eprintf("Use of = instead of :=.\n");
     if (code == 2)
-        printf("= must be followed by a number.\n");
+        eprintf("= must be followed by a number.\n");
     if (code == 3)
-        printf("Identifier must be followed by =.\n");
+        eprintf("Identifier must be followed by =.\n");
     if (code == 4)
-        printf("const, var, procedure must be followed by identifier.\n");
+        eprintf("const, var, procedure must be followed by identifier.\n");
     if (code == 5)
-        printf("Semicolon or comma missing.\n");
+        eprintf("Semicolon or comma missing.\n");
     if (code == 6)
-        printf("Incorrect symbol after procedure declaration.\n");
+        eprintf("Incorrect symbol after procedure declaration.\n");
     if (code == 7)
-        printf("Statement expected.\n");
+        eprintf("Statement expected.\n");
     if (code == 8)
-        printf("Incorrect symbol after ststement part in block.\n");
+        eprintf("Incorrect symbol after ststement part in block.\n");
     if (code == 9)
-        printf("Period expected.\n");
+        eprintf("Period expected.\n");
     if (code == 10)
-        printf("Semicolon between statements missing.\n");
+        eprintf("Semicolon between statements missing.\n");
     if (code == 11)
-        printf("Undeclared identifier.\n");
+        eprintf("Undeclared identifier.\n");
     if (code == 12)
-        printf("Assignment to constant or procedure is not allowed.\n");
+        eprintf("Assignment to constant or procedure is not allowed.\n");
     if (code == 13)
-        printf("Assignment operator expected.\n");
+        eprintf("Assignment operator expected.\n");
     if (code == 14)
-        printf("call must be followed by an identifier.\n");
+        eprintf("call must be followed by an identifier.\n");
     if (code == 15)
-        printf("Call of a constant or a variable is meaningless.\n");
+        eprintf("Call of a constant or a variable is meaningless.\n");
     if (code == 16)
-        printf("then expected.\n");
+        eprintf("then expected.\n");
     if (code == 17)
-        printf("Semicolon expected.\n"); // I modified this one to not include "or }" because that makes no sense to me.
+        eprintf("Semicolon expected.\n"); // I modified this one to not include "or }" because that makes no sense to me.
     if (code == 18)
-        printf("do expected.\n");
+        eprintf("do expected.\n");
     if (code == 19)
-        printf("Incorrect symbol following statement.\n");
+        eprintf("Incorrect symbol following statement.\n");
     if (code == 20)
-        printf("Relational operator expected.\n");
+        eprintf("Relational operator expected.\n");
     if (code == 21)
-        printf("Expression must not contain a procedure identifier.\n");
+        eprintf("Expression must not contain a procedure identifier.\n");
     if (code == 22)
-        printf("Right parenthesis missing.\n");
+        eprintf("Right parenthesis missing.\n");
     if (code == 23)
-        printf("The preceding factor cannot begin with this symbol.\n");
+        eprintf("The preceding factor cannot begin with this symbol.\n");
     if (code == 24)
-        printf("An expression cannot begin with this symbol.\n");
+        eprintf("An expression cannot begin with this symbol.\n");
     if (code == 25)
-        printf("This number is too large.\n");
+        eprintf("This number is too large.\n");
     if (code == 26)
-        printf("The input file is too large.\n");
+        eprintf("The input file is too large.\n");
     if (code == 27)
-        printf("Call must be followed by an identifier for a procedure.\n");
+        eprintf("Call must be followed by an identifier for a procedure.\n");
     if (code == 28)
-        printf("Expected a factor, did not find one!\n");
+        eprintf("Expected a factor, did not find one!\n");
     if (code == 29)
-    	printf("Too many symbols, or a conflicting symbol was found!\n");
+    	eprintf("Too many symbols, or a conflicting symbol was found!\n");
     if (code == 30)
-    	printf("Read and write require an identifier after them!\n");
+    	eprintf("Read and write require an identifier after them!\n");
     if (code == 31)
-    	printf("You can only read into a variable!");
+    	eprintf("You can only read into a variable!");
     if (code == 32)
-    	printf("You can only write a variable or constant!");
+    	eprintf("You can only write a variable or constant!");
 
     exit(1);
 }
