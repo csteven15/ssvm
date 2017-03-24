@@ -8,3 +8,10 @@ COMPLETE-implement else
 
 -what about that nullsym tho
 	+Just don't tbh
+
+error 9 sample code
+error13 isn't working. showing wrong error. semicolon or comma missing instead of assignment operator line 742
+CHANGES
+added statement error line 893 with else error(7) but then error(9) won't work correcty
+check if it is eqaul symbol before checking for become symbol line 738
+line 770, added semicolon error between statements error(10)

@@ -1,0 +1,4 @@
+const x = 1111111;
+begin
+	print x;
+end.

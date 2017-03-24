@@ -1,0 +1,4 @@
+const x 0;
+begin
+	write x;
+end.

@@ -1,0 +1,5 @@
+const x = 0;
+begin
+	if x > 0
+	x := 2;
+end.

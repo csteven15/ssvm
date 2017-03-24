@@ -1,0 +1,4 @@
+const x 0;
+begin
+	x := 0;
+end.
