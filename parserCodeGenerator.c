@@ -849,7 +849,7 @@ void statement()
     		//Undeclared identifier!
     		error(11, curToken);
     	}
-    	if (symbolTable[place].kind != 2)
+    	if (symbolTable[place].kind != 2 || getTokenType(curToken) != varsym)
     	{
     		//Can't read into a procedure or constant!
     		error(31, curToken);
@@ -965,6 +965,11 @@ void expression()
         adop = getTokenType(curToken);
         curToken++;
     }
+	else
+	{
+		//Throw error
+		error(24, curToken);
+	}
 
     //Load a term! After this a term will be in rc-1.
     term();

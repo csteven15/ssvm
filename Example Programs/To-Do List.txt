@@ -10,7 +10,12 @@ COMPLETE-implement else
 	+Just don't tbh
 
 error 9 sample code
+not sure what error 17 means since its already covered?
+error 18 not working correctly, should be do expected, not missing period
 error13 isn't working. showing wrong error. semicolon or comma missing instead of assignment operator line 742
+change     while (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)      to where it detects error if it is not a plussym or minussym
+fix error 24
+fix error 31
 CHANGES
 added statement error line 893 with else error(7) but then error(9) won't work correcty
 check if it is eqaul symbol before checking for become symbol line 738
