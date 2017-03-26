@@ -1,5 +1,0 @@
-const a = 0;
-var x, y;
-begin
-	x := a;
-end.

@@ -2,6 +2,7 @@ const exitVal = 0;
 var input, sum;
 begin
 	input := 12345;
+	sum := 0;
 	write sum;
 	while input <> exitVal do
 	begin
