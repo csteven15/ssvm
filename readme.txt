@@ -1,11 +1,15 @@
+----------------------------General Program Usage----------------------------
+
 This program compiles code written in tiny PL/0. To use this program,
 first compile it. Below is an example of how to compile the program
 on a linux system:
 
 gcc -o compile compile.c
 
-Once you compile the program, then the program can be run. Below is an
-example of how to run the program on a linux system:
+Once you compile the program, then the program can be run. Note that 
+you must place every file the program needs in the same directory as
+the compile executable. Below is an example of how to run the program
+on a linux system:
 
 ./compile -l -a -v
 
@@ -25,6 +29,10 @@ Below are descriptions of what the arguments do:
 -a		Prints the generated assembly code to the screen.
 -v		Prints the virtual machine output to the screen after it runs.
 
+-----------------------------Additional Included Files----------------------------
+
+
+------------------------------Additional Information------------------------------
 
 If, for some reason, you want to use the parser code generator alone, you can do
 so by compiling parserCodeGenerator.c by itself. Below is an example of how to

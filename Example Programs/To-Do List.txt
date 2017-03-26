@@ -27,11 +27,13 @@ line 770, added semicolon error between statements error(10)
 Revised To-Do List:
 
 -Enforce max rc can be is 16; If it ever hit 17, that implies we are trying to store something in spot 16, which doesn't exist
+	+Ok. Done.
 
 -Enforce undeclared variable error
 	+Ok. This is now enforced!
 
 -Figure out where address counter should actually start and incrementing scheme...
+	+Ok? Like, it runs programs without procedures properly, I don't really know what else to do with this...
 
 -Maybe add a divide by 0 check...
 
