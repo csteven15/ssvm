@@ -1,3 +1,19 @@
+/*
+
+Compiler Output:
+Running lexical analyzer...
+Lexical Analyzer Output:
+Symbolic Lexeme List:
+varsym identsym x semicolonsym beginsym writesym semicolonsym endsym periodsym 
+
+Lexeme List:
+29 2 x 18 21 31 18 22 19
+
+Running parser code generator...
+An error occurred while parsing: Read and write require an identifier after them!
+
+*/
+
 var x;
 begin
 	write ;

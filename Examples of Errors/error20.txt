@@ -1,3 +1,19 @@
+/*
+
+Compiler Output:
+Running lexical analyzer...
+Lexical Analyzer Output:
+Symbolic Lexeme List:
+varsym identsym x semicolonsym beginsym identsym x becomesym numbersym 0 semicolonsym ifsym identsym x numbersym 0 thensym identsym x becomesym numbersym 1 semicolonsym endsym periodsym 
+
+Lexeme List:
+29 2 x 18 21 2 x 20 3 0 18 23 2 x 3 0 24 2 x 20 3 1 18 22 19
+
+Running parser code generator...
+An error occurred while parsing: Relational operator expected.
+
+*/
+
 var x;
 begin
 	x := 0;
