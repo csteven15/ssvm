@@ -1,4 +1,4 @@
-const x;
+const x = 6;
 begin
 	read x;
 end.

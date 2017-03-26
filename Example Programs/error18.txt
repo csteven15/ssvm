@@ -1,5 +1,5 @@
-var a;
 const x = 0;
+var a;
 begin
 	while x > 0;
 	a = 0;

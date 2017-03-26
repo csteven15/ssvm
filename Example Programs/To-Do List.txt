@@ -20,3 +20,19 @@ CHANGES
 added statement error line 893 with else error(7) but then error(9) won't work correcty
 check if it is eqaul symbol before checking for become symbol line 738
 line 770, added semicolon error between statements error(10)
+
+
+
+
+Revised To-Do List:
+
+-Enforce max rc can be is 16; If it ever hit 17, that implies we are trying to store something in spot 16, which doesn't exist
+
+-Enforce undeclared variable error
+	+Ok. This is now enforced!
+
+-Figure out where address counter should actually start and incrementing scheme...
+
+-Maybe add a divide by 0 check...
+
+-Maybe add redundant enforcement of identifier and number length caps

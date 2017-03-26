@@ -99,6 +99,10 @@ void error(int code, int token)
     	eprintf("You can only read into a variable!");
     if (code == 32)
     	eprintf("You can only write a variable or constant!");
+    if (code == 33)
+    	eprintf("Use of unassigned variable!");
+    if (code == 34)
+    	eprintf("Program requires too many registers to run on the vm!");
 
     exit(1);
 }
@@ -419,6 +423,16 @@ void printSymbolTable()
 	This variable represents the next open register at all times.
 */
  int rc = 0;
+ 
+ void rcCheck()
+ {
+ 	if (rc > 16)
+ 	{
+ 		// If rc is 17, that implies we tried to store at location 16, which 
+ 		// does not exist since our registers only go from 0-15!
+ 		error(34, -1);
+ 	}
+ }
 
 typedef struct code
 {
@@ -486,8 +500,7 @@ void writeCodeArray()
  */
 
 int curToken = 0;
-int var_level = 1;
-int addressCounter = 1;
+int addressCounter = 4;
 
 void emit(int op, int r, int l, int m);
 void doTheAwesomeParsingAndCodeGenerating();
@@ -525,7 +538,7 @@ void program()
 {
     int start = curToken;
 
-    emit(6, 0, 0, 1); //Because bp starts at 1, increment stack size by 1 from the get-go.
+    emit(6, 0, 0, 4); //BP starts at 1, and we have FV, SL, DL, and RA. Thus, the starting sp should really be at 4.
 
     block();
     //If current token is NOT a period
@@ -540,7 +553,6 @@ void program()
     emit(11, 0, 0, 3);
 }
 
-//TODO: ask about this structure of unchained ifs
 void block()
 {
     symbol s;
@@ -650,60 +662,7 @@ void block()
         curToken++;
     }
 
-	//TODO: Procedures not yet supported
-    while(getTokenType(curToken) == procsym)
-    {
-        curToken++;
-        if (getTokenType(curToken) != identsym)
-        {
-            //Expected an identifier after beginning of procedure!
-            error(4, curToken);
-        }
-		//Symbol table type
-		s.kind = 3;
-        //Double skip because following the identsym is the identifier itself...
-        curToken++;
-		//Symbol table identifier
-		strcpy(s.name, tokenList[curToken]);
-        curToken++;
-        if (getTokenType(curToken) != semicolonsym)
-        {
-            //Expected semicolon after procedure declaration!
-            error(17, curToken);
-        }
-		if (!addSymbol(s))
-		{
-			//Symbol table full or conflicting symbol!
-        	error(29, curToken);
-        }
-
-        curToken++;
-
-        /*
-         TODO: ask about this calling block and looking for semicolon after a
-         procedure line. Doesn't that imply that a procedure could just be like
-
-         procedure MULT;
-         var x;;
-
-         Which looks invalid to me. Doesn't block need to consider begin and end as well?
-
-         Edit: I've kind of resolved this alone. The fact that block calls statement later implies
-         that there is at least one statement after variable declaration, procedure declaration, or
-         whatever. Thus, it makes sense to check for semicolon after block because a procedure is
-         a procedure declaration, then some other declarations, then a statement, then a semicolon.
-         */
-
-        //Now, after the procedure declaration there should be a block of code...
-        block();
-
-        //After every procedure is an additional semicolon...
-        if (getTokenType(curToken) != semicolonsym)
-        {
-            error(17, curToken);
-        }
-        curToken++;
-    }
+	
 
     //And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
     statement();
@@ -730,6 +689,9 @@ void statement()
         	//Cannot assign to procedure or constant
         	error(12, curToken);
         }
+        
+        //Inform the world that this variable has been assigned!
+        symbolTable[place].val = 1;
 
         curToken++;
 
@@ -751,27 +713,14 @@ void statement()
 
         //Put the resulting expression into the variable
         emit(4, rc-1, 0, symbolTable[place].addr);
-    }
-    else if (getTokenType(curToken) == callsym)
-    {
-        curToken++;
-        if (getTokenType(curToken) != identsym)
-        {
-            error(27, curToken);
-        }
-        //Double increment because after identsym is the identifier itself...
-        curToken++;
-        curToken++;
+        
+        //The register the expression was stored into is now free again, because we stored it into the variable in the stack..
+        rc = rc-1;
     }
     else if (getTokenType(curToken) == beginsym)
     {
         curToken++;
         statement();
-		if (getTokenType(curToken) != semicolonsym)
-		{
-			//Expect semicolon between statements
-			error(10, curToken);
-		}
         while(getTokenType(curToken) == semicolonsym)
         {
             curToken++;
@@ -849,11 +798,14 @@ void statement()
     		//Undeclared identifier!
     		error(11, curToken);
     	}
-    	if (symbolTable[place].kind != 2 || getTokenType(curToken) != varsym)
+    	if (symbolTable[place].kind != 2)
     	{
     		//Can't read into a procedure or constant!
     		error(31, curToken);
     	}
+    	
+    	//Inform the world that this variable has been assigned!
+        symbolTable[place].val = 1;
 
     	//Okay, it exists, and has no issues! We need to generate code to read into this symbol...
     	emit(10, rc, 0, 2); // Read input into register rc
@@ -886,6 +838,13 @@ void statement()
     	{
     		//Can't write out a procedure!
     		error(32, curToken);
+    	}
+    	
+    	//Enfoce that, if this is a variable, it must have been assigned to!
+    	if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
+    	{
+    		//Use of unassigned variable!
+    		error(33, curToken);
     	}
 
     	//Okay, it exists, and has no issues! We need to generate code to write to the screen this symbol...
@@ -965,11 +924,6 @@ void expression()
         adop = getTokenType(curToken);
         curToken++;
     }
-	else
-	{
-		//Throw error
-		error(24, curToken);
-	}
 
     //Load a term! After this a term will be in rc-1.
     term();
@@ -1048,11 +1002,19 @@ void factor()
         	//Factor can't be a procedure!
         	error(21, curToken);
         }
+        
+        //Enfoce that, if this is a variable, it must have been assigned to!
+    	if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
+    	{
+    		//Use of unassigned variable!
+    		error(33, curToken);
+    	}
 
         //Ok, valid identifier, so now emit away!
         emit(3, rc, 0, symbolTable[place].addr); // Load into register rc the value at address of the identifier...
         rc++;									 // Let the world know that we used a register
-
+        rcCheck();
+        
         curToken++;
     }
     else if (getTokenType(curToken) == numbersym)
@@ -1070,7 +1032,7 @@ void factor()
 
         emit(1, rc, 0, literalValue); // Load immediately into register rc literalValue
         rc++;						  // Let the world know that we used a register
-
+        rcCheck();
 
         curToken++;
     }
