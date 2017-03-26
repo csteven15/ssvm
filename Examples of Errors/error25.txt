@@ -1,3 +1,11 @@
+/*
+
+Compiler Output:
+Running lexical analyzer...
+An error occurred while running lexical analysis: Number too long!
+
+*/
+
 const x = 1111111;
 begin
 	print x;

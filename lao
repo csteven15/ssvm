@@ -1,5 +1,0 @@
-Symbolic Lexeme List:
-constsym identsym x eqlsym numbersym 0 semicolonsym varsym identsym a semicolonsym beginsym whilesym identsym x gtrsym numbersym 0 semicolonsym identsym a eqlsym numbersym 0 semicolonsym endsym periodsym 
-
-Lexeme List:
-28 2 x 9 3 0 18 29 2 a 18 21 25 2 x 13 3 0 18 2 a 9 3 0 18 22 19 
