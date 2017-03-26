@@ -56,7 +56,9 @@ demonstrates. Some errors have multiple files to exemplify them.
 Also included with this program is one valid program, which is already loaded into
 input.txt. This program computes the value of n!, where n is the only input read
 in by the program. The program only works for valuse which will not overflow a
-32-bit integer.
+32-bit integer. Example output for this program is included as well in a file
+named "sampleOutput.txt". Note that normally, output is printed to the screen and
+not a file.
 
 ------------------------------Additional Information------------------------------
 
