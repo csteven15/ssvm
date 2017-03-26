@@ -1,3 +1,19 @@
+/*
+
+Compiler Output:
+Running lexical analyzer...
+Lexical Analyzer Output:
+Symbolic Lexeme List:
+constsym numbersym 0 semicolonsym beginsym identsym x becomesym numbersym 0 semicolonsym endsym periodsym
+
+Lexeme List:
+28 3 0 18 21 2 x 20 3 0 18 22 19
+
+Running parser code generator...
+An error occurred while parsing: const, var, procedure must be followed by identifier.
+
+*/
+
 const 0;
 begin
 	x := 0;

@@ -1,3 +1,18 @@
+/*
+
+Compiler Output:
+Running lexical analyzer...
+Lexical Analyzer Output:
+Symbolic Lexeme List:
+varsym identsym x semicolonsym beginsym identsym x becomesym numbersym 56 semicolonsym endsym
+
+Lexeme List:
+29 2 x 18 21 2 x 20 3 56 18 22
+
+Running parser code generator...
+An error occurred while parsing: Period expected.
+
+*/
 var x;
 begin
 	x := 56;
