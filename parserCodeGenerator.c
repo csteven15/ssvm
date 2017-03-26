@@ -18,6 +18,14 @@
 #define MAX_SYMBOL_TABLE_SIZE 256
 #define MAX_NUMBER_SIZE 5
 
+/*
+	If this is set to 0, then declared variables have
+	a default value of 0. If it is set to 1, then
+	declared variables must be assigned before they can
+	be used.
+*/
+#define ENFORCE_VARIABLE_ASSIGNMENT 0
+
 
 // --------------------------------------------------Begin Random Additional Code--------------------------------------------------
 
@@ -690,9 +698,6 @@ void statement()
         	error(12, curToken);
         }
         
-        //Inform the world that this variable has been assigned!
-        symbolTable[place].val = 1;
-
         curToken++;
 
         if (getTokenType(curToken) != becomesym)
@@ -710,6 +715,12 @@ void statement()
 
         //Parse an expression...
         expression();
+        
+        if (ENFORCE_VARIABLE_ASSIGNMENT)
+        {
+		    //Inform the world that this variable has been assigned!
+		    symbolTable[place].val = 1;
+		}
 
         //Put the resulting expression into the variable
         emit(4, rc-1, 0, symbolTable[place].addr);
@@ -804,8 +815,11 @@ void statement()
     		error(31, curToken);
     	}
     	
-    	//Inform the world that this variable has been assigned!
-        symbolTable[place].val = 1;
+    	if (ENFORCE_VARIABLE_ASSIGNMENT)
+    	{
+    		//Inform the world that this variable has been assigned!
+        	symbolTable[place].val = 1;
+        }
 
     	//Okay, it exists, and has no issues! We need to generate code to read into this symbol...
     	emit(10, rc, 0, 2); // Read input into register rc
@@ -840,11 +854,14 @@ void statement()
     		error(32, curToken);
     	}
     	
-    	//Enfoce that, if this is a variable, it must have been assigned to!
-    	if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
+    	if (ENFORCE_VARIABLE_ASSIGNMENT)
     	{
-    		//Use of unassigned variable!
-    		error(33, curToken);
+			//Enfoce that, if this is a variable, it must have been assigned to!
+			if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
+			{
+				//Use of unassigned variable!
+				error(33, curToken);
+			}
     	}
 
     	//Okay, it exists, and has no issues! We need to generate code to write to the screen this symbol...
@@ -1003,11 +1020,14 @@ void factor()
         	error(21, curToken);
         }
         
-        //Enfoce that, if this is a variable, it must have been assigned to!
-    	if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
-    	{
-    		//Use of unassigned variable!
-    		error(33, curToken);
+        if (ENFORCE_VARIABLE_ASSIGNMENT)
+        {
+		    //Enfoce that, if this is a variable, it must have been assigned to!
+			if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
+			{
+				//Use of unassigned variable!
+				error(33, curToken);
+			}
     	}
 
         //Ok, valid identifier, so now emit away!
