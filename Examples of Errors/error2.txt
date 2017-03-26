@@ -1,3 +1,19 @@
+/*
+
+Compiler Output:
+Running lexical analyzer...
+Lexical Analyzer Output:
+Symbolic Lexeme List:
+constsym identsym x eqlsym semicolonsym beginsym writesym identsym x semicolonsym endsym periodsym
+
+Lexeme List:
+28 2 x 9 18 21 31 2 x 18 22 19
+
+Running parser code generator...
+An error occurred while parsing: = must be followed by a number.
+
+*/
+
 const x = ;
 begin
 	write x;

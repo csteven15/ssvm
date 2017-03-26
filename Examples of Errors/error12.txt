@@ -1,3 +1,19 @@
+/*
+
+Compiler Output:
+Running lexical analyzer...
+Lexical Analyzer Output:
+Symbolic Lexeme List:
+constsym identsym x eqlsym numbersym 0 semicolonsym beginsym identsym x becomesym numbersym 0 semicolonsym endsym periodsym
+
+Lexeme List:
+28 2 x 9 3 0 18 21 2 x 20 3 0 18 22 19
+
+Running parser code generator...
+An error occurred while parsing: Assignment to constant or procedure is not allowed.
+
+*/
+
 const x = 0;
 begin
 	x := 0;

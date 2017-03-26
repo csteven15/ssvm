@@ -431,12 +431,12 @@ void printSymbolTable()
 	This variable represents the next open register at all times.
 */
  int rc = 0;
- 
+
  void rcCheck()
  {
  	if (rc > 16)
  	{
- 		// If rc is 17, that implies we tried to store at location 16, which 
+ 		// If rc is 17, that implies we tried to store at location 16, which
  		// does not exist since our registers only go from 0-15!
  		error(34, -1);
  	}
@@ -670,7 +670,7 @@ void block()
         curToken++;
     }
 
-	
+
 
     //And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
     statement();
@@ -697,7 +697,7 @@ void statement()
         	//Cannot assign to procedure or constant
         	error(12, curToken);
         }
-        
+
         curToken++;
 
         if (getTokenType(curToken) != becomesym)
@@ -715,7 +715,7 @@ void statement()
 
         //Parse an expression...
         expression();
-        
+
         if (ENFORCE_VARIABLE_ASSIGNMENT)
         {
 		    //Inform the world that this variable has been assigned!
@@ -724,7 +724,7 @@ void statement()
 
         //Put the resulting expression into the variable
         emit(4, rc-1, 0, symbolTable[place].addr);
-        
+
         //The register the expression was stored into is now free again, because we stored it into the variable in the stack..
         rc = rc-1;
     }
@@ -814,7 +814,7 @@ void statement()
     		//Can't read into a procedure or constant!
     		error(31, curToken);
     	}
-    	
+
     	if (ENFORCE_VARIABLE_ASSIGNMENT)
     	{
     		//Inform the world that this variable has been assigned!
@@ -853,7 +853,7 @@ void statement()
     		//Can't write out a procedure!
     		error(32, curToken);
     	}
-    	
+
     	if (ENFORCE_VARIABLE_ASSIGNMENT)
     	{
 			//Enfoce that, if this is a variable, it must have been assigned to!
@@ -1019,7 +1019,7 @@ void factor()
         	//Factor can't be a procedure!
         	error(21, curToken);
         }
-        
+
         if (ENFORCE_VARIABLE_ASSIGNMENT)
         {
 		    //Enfoce that, if this is a variable, it must have been assigned to!
@@ -1034,7 +1034,7 @@ void factor()
         emit(3, rc, 0, symbolTable[place].addr); // Load into register rc the value at address of the identifier...
         rc++;									 // Let the world know that we used a register
         rcCheck();
-        
+
         curToken++;
     }
     else if (getTokenType(curToken) == numbersym)
