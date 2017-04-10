@@ -763,6 +763,12 @@ void statement()
         statement();
 
         code_array[jpc].m = cx;
+
+		if (getTokenType(curToken) == elsesym)
+		{
+			curToken++;
+			statement();
+		}
     }
     else if (getTokenType(curToken) == whilesym)
     {
