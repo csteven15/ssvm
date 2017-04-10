@@ -763,11 +763,25 @@ void statement()
         statement();
 
         code_array[jpc].m = cx;
-
+        
+        //Now there could be an else...
 		if (getTokenType(curToken) == elsesym)
 		{
+			//There is an else!
+			
+			//So, we need to have something to jump past the else if the original condition was true...
+			int jmp = cx;
+			emit(7, 0, 0, 0);
+			
+			//We need to update our previous jump stuff to jump past that new jump statement, too!
+			code_array[jpc].m = cx;
+			
+			//Read the statement...
 			curToken++;
 			statement();
+			
+			//Update jmp
+			code_array[jmp].m = cx;
 		}
     }
     else if (getTokenType(curToken) == whilesym)
