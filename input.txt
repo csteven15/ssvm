@@ -1,17 +1,24 @@
-/*
-	This is a simple program for iteratively
-	computing the value of n! and writing it
-	to the screen. Works only up to 12!.
-*/
 
-var input, ans;
+
+var input, input2, one, two, three, four, five, six, seven;
 begin
+	one := 1;
+	two := 2;
+	three := 3;
+	four := 4;
+	five := 5;
+	six := 6;
+	seven := 7;
+	
 	read input;
-	ans := 1;
-	while input > 0 do
+	if input = 1 then
 	begin
-		ans := ans * input;
-		input := input - 1;
+		read input2;
+		if input2 = 2 then
+			write one
+		else
+			write two;
+		write three
 	end;
-	write ans;
+	write five
 end.
