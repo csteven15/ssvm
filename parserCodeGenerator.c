@@ -70,7 +70,7 @@ void error(int code, int token)
     if (code == 13)
         eprintf("Assignment operator expected.\n");
     if (code == 14)
-        eprintf("call must be followed by an identifier.\n");
+        eprintf("Call must be followed by an identifier.\n");
     if (code == 15)
         eprintf("Call of a constant or a variable is meaningless.\n");
     if (code == 16)
@@ -111,6 +111,10 @@ void error(int code, int token)
     	eprintf("Use of unassigned variable!");
     if (code == 34)
     	eprintf("Program requires too many registers to run on the vm!");
+    if (code == 35)
+    	eprintf("Semicolon required after procedure declaration.");
+    if (code == 36)
+    	eprintf("Semicolon required after procedure block.");
 
     exit(1);
 }
@@ -349,20 +353,23 @@ void clearSymbolTable()
 
 /*
 	This method returns the index in the symbol table of the symbol
-	that has the name of name. Returns -1 if the symbol does not
-	exist in the symbol table.
+	that has the name of name with the highest lexicographical level.
+	Returns -1 if the symbol does not exist in the symbol table.
  */
 int findSymbolByName(char * name)
 {
+	int best = -1;
     for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
     {
         if (strcmp(name, symbolTable[i].name) == 0)
         {
-            return i;
+        	if (best == -1 || symbolTable[i].level > symbolTable[best].level)
+            	best = i;
         }
     }
-    return -1;
+    return best;
 }
+
 
 /*
 	Returns 1 if the symbol table had an entry with the name [name],
@@ -404,6 +411,29 @@ int addSymbol(symbol s)
         }
     }
     return 0;
+}
+
+/*
+	Finds all symbols with level [level] and removes them from
+	the symbol table (purges the data in the spot).
+*/
+void removeSymbolsByLevel(int level)
+{
+	for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
+	{
+		if (symbolTable[i].level == level)
+		{
+			//We want to remove the symbol at i...
+			symbolTable[i].kind = -1;
+		    for(int c = 0; c < 12; c++)
+		    {
+		        symbolTable[i].name[c] = '\0';
+		    }
+		    symbolTable[i].val = -1;
+		    symbolTable[i].level = -1;
+		    symbolTable[i].addr = -1;
+		}
+	}
 }
 
 /*
@@ -508,7 +538,14 @@ void writeCodeArray()
  */
 
 int curToken = 0;
-int addressCounter = 4;
+
+/*
+	This variable should represent the current lexicographical level at all times...
+	Starts at -1 because main's block will increment it by 1 to get 0...
+*/
+int lexLevel = -1;
+
+
 
 void emit(int op, int r, int l, int m);
 void doTheAwesomeParsingAndCodeGenerating();
@@ -546,7 +583,6 @@ void program()
 {
     int start = curToken;
 
-    emit(6, 0, 0, 4); //BP starts at 1, and we have FV, SL, DL, and RA. Thus, the starting sp should really be at 4.
 
     block();
     //If current token is NOT a period
@@ -557,15 +593,28 @@ void program()
     }
     //printf("Got program from %d-%d\n", start, curToken);
 
+	/*REMOVE
     //SIO
     emit(11, 0, 0, 3);
+    */
 }
 
+
+//TODO: block should "start off" generating a jump, which will have to be updated to jump to the beginning of it's STATEMENT.
+//note that procedure decl happens before the statement for this block, so other procedures will be parsed in between the jump and the statement... which is key
 void block()
 {
     symbol s;
     int start = curToken;
     //A block can be a constant-declaration, variable declaration, or a statement
+    
+    //Increment lexLevel and offsetCounter; generate code to increment for FV, SL, DL, RA
+    //We strictly set to 4 because it should always begin at 4 for a block...
+    lexLevel += 1;
+    int offsetCounter = 4; 
+    
+    int blockJump = cx;
+    emit(7, 0, 0, 0);
 
     //If current token is a constant symbol...
     if (getTokenType(curToken) == constsym)
@@ -600,19 +649,21 @@ void block()
             curToken++;
 			//Symbol table value
             s.val = atoi(tokenList[curToken]);
-            s.level = 1;
-            s.addr = addressCounter;
-            addressCounter++;
+            s.level = lexLevel;
+            s.addr = offsetCounter;
+            offsetCounter++;
             curToken++;
 			if (!addSymbol(s))
 			{
 				//Symbol table full or conflicting symbol!
             	error(29, curToken);
             }
-
+            /*REMOVE
             emit(6, 0, 0, 1); // increment our stack size in the vm by 1 to allocate the space for this thing..
             emit(1, rc, 0, s.val);  // load into register!
+            //Note that I think the lex levels down here is 0, since we just created this variable at this lexLevel...
             emit(4, rc, 0, s.addr); // store onto vm stack!
+            */
         }
         while(getTokenType(curToken) == commasym);
 
@@ -642,21 +693,24 @@ void block()
 			//Symbol table identifier
 			strcpy(s.name, tokenList[curToken]);
 			//Symbol table level
-			s.level = 1;
+			s.level = lexLevel;
 			s.val = 0; //Because they're variables which are not assigned initially!
-			s.addr = addressCounter;
-			addressCounter++;
+			s.addr = offsetCounter;
+			offsetCounter++;
 			if (!addSymbol(s))
             {
             	//Symbol table full or conflicting symbol!
             	error(29, curToken);
             }
             curToken++;
-
+            
+            /*REMOVE
             //Now I have added a new symbol to my table and need to plop it into the vm stack...
             emit(6, 0, 0, 1); // increment our stack size in the vm by 1 to allocate the space for this thing..
             emit(1, rc, 0, s.val); // load into register!
+            //Note that I think the lex levels down here is 0, since we just created this variable at this lexLevel...
             emit(4, rc, 0, s.addr); // store whats in register into vm stack!
+            */
         }
         while(getTokenType(curToken) == commasym);
 
@@ -669,11 +723,87 @@ void block()
         }
         curToken++;
     }
+    
+    while (getTokenType(curToken) == procsym)
+    {
+    	curToken++;
+    	
+    	//We now should have an identifier
+    	if (getTokenType(curToken) != identsym)
+    	{
+    		//Identifier expected!
+    		error(4, curToken);
+    	}
+    	
+    	//We did find an identifier!
+    	curToken++;
+    	
+    	s.kind = 3;
+    	strcpy(s.name, tokenList[curToken]);
+    	s.val = 0; //unused?
+    	s.level = lexLevel; //TODO: What is this for?
+    	s.addr = cx; //This cx should be the place where block is going to emit the jump...
+    	
+    	if (!addSymbol(s))
+    	{
+    		//Symbol table full or conflicting symbol!
+            error(29, curToken);
+    	}
+    	
+    	//Symbol table wasn't full!
+    	curToken++;
+    	
+    	//We now expect a semicolonsym
+    	if (getTokenType(curToken) != semicolonsym)
+    	{
+    		//Semicolon required after procedure declaration
+    		error(35, curToken);
+    	}
+    	curToken++;
+    	
+    	//Now we require the block for the procedure!
+    	block();
+    	
+    	//Semicolon after block!
+    	if (getTokenType(curToken) != semicolonsym)
+    	{
+    		//Semicolon required after procedure block
+    		error(36, curToken);
+    	}
+    	curToken++;
+    }
 
-
+	//Update that jump we made!
+	code_array[blockJump].m = cx;
+	
+	//Increment to allocate for all variables!
+	emit(6, 0, 0, offsetCounter);
+	
+	//We must now emit everything for constant assignment...
+	for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
+	{
+		//If the symbol at i was made from this level, and it was a constant...
+		if (symbolTable[i].level == lexLevel && symbolTable[i].kind == 1)
+		{
+			//We need to assign the constant it's value!
+			emit(1, rc, 0, symbolTable[i].val);
+			
+			//Note the 0 lexicographical level here; this is because the constant
+			//was generated at this level, so we go 0 down from this level! (We modify
+			//the current activation record)
+			emit(4, rc, 0, symbolTable[i].addr);
+		}
+	}
 
     //And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
     statement();
+    
+    //Now, clean up symbol table and decrement lexLevel...
+    removeSymbolsByLevel(lexLevel);
+    lexLevel--;
+    
+    //Return from method...
+    emit(2, 0, 0, 0);
 
     //printf("Got block from %d-%d\n", start, curToken);
 }
@@ -723,7 +853,8 @@ void statement()
 		}
 
         //Put the resulting expression into the variable
-        emit(4, rc-1, 0, symbolTable[place].addr);
+        int levelsDown = lexLevel-symbolTable[place].level;
+        emit(4, rc-1, levelsDown, symbolTable[place].addr);
 
         //The register the expression was stored into is now free again, because we stored it into the variable in the stack..
         rc = rc-1;
@@ -753,6 +884,9 @@ void statement()
 
         int jpc = cx;
         emit(8, rc-1, 0, 0);
+        
+        //Once we've checked on the condition we are DONE with that result!
+        rc -= 1;
 
         if (getTokenType(curToken) != thensym)
         {
@@ -795,6 +929,9 @@ void statement()
 
         int jpc = cx;
         emit(8, rc-1, 0, 0);
+        
+        //Once we've checked on the condition we are DONE with that result!
+        rc -= 1;
 
         if (getTokenType(curToken) != dosym)
         {
@@ -843,7 +980,8 @@ void statement()
 
     	//Okay, it exists, and has no issues! We need to generate code to read into this symbol...
     	emit(10, rc, 0, 2); // Read input into register rc
-    	emit(4, rc, 0, symbolTable[place].addr); // Store the value now in register rc into the address of the ident
+    	int levelsDown = lexLevel-symbolTable[place].level;
+    	emit(4, rc, levelsDown, symbolTable[place].addr); // Store the value now in register rc into the address of the ident
 
     	curToken++;
     }
@@ -885,9 +1023,42 @@ void statement()
     	}
 
     	//Okay, it exists, and has no issues! We need to generate code to write to the screen this symbol...
-    	emit(3, rc, 0, symbolTable[place].addr); // Load into rc what is at the address of the symbol we are talking about
+    	int levelsDown = lexLevel-symbolTable[place].level;
+    	emit(3, rc, levelsDown, symbolTable[place].addr); // Load into rc what is at the address of the symbol we are talking about
     	emit(9, rc, 0, 1); // Print what is in rc to the screen
 
+    	curToken++;
+    }
+    else if (getTokenType(curToken) == callsym)
+    {
+    	curToken++;
+    	
+    	//Better be an identifier!
+    	if (getTokenType(curToken) != identsym)
+    	{
+    		//Call requires ident...
+    		error(14, curToken);
+    	}
+    	curToken++;
+    	
+    	//Is the identifier a procedure identifier?
+    	int place = findSymbolByName(tokenList[curToken]);
+    	if (place == -1)
+    	{
+    		//Could not find symbol
+        	error(11, curToken);
+    	}
+    	
+    	if (symbolTable[place].kind != 3)
+    	{
+    		//Call to var or const is useless..
+    		error(15, curToken);
+    	}
+    	
+    	//Identifier is a procedure and exists!
+    	int levelsDown = lexLevel-symbolTable[place].level;
+    	emit(5, 0, levelsDown, symbolTable[place].addr);
+    	
     	curToken++;
     }
     //printf("Got statement from %d-%d\n", start, curToken);
@@ -1051,7 +1222,8 @@ void factor()
     	}
 
         //Ok, valid identifier, so now emit away!
-        emit(3, rc, 0, symbolTable[place].addr); // Load into register rc the value at address of the identifier...
+        int levelsDown = lexLevel-symbolTable[place].level;
+        emit(3, rc, levelsDown, symbolTable[place].addr); // Load into register rc the value at address of the identifier...
         rc++;									 // Let the world know that we used a register
         rcCheck();
 
