@@ -1,24 +1,24 @@
+/*
+	Recursively computes base to the exp power.
+*/
 
+var base, exp, ans;
 
-var input, input2, one, two, three, four, five, six, seven;
+procedure pow;
+const b=2;
 begin
-	one := 1;
-	two := 2;
-	three := 3;
-	four := 4;
-	five := 5;
-	six := 6;
-	seven := 7;
-	
-	read input;
-	if input = 1 then
-	begin
-		read input2;
-		if input2 = 2 then
-			write one
-		else
-			write two;
-		write three
-	end;
-	write five
+	if exp > 0 then
+		begin
+			exp := exp - 1;
+			ans := ans * base;
+			call pow;
+		end
+end;
+
+begin
+	read base;
+	read exp;
+	ans := 1;
+	call pow;
+	write ans;
 end.

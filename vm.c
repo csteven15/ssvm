@@ -81,19 +81,19 @@ void printMachineState(int instructionLine)
 	instruction i = code[instructionLine];
 	
 	//Print out everything but the stack...
-	fprintf(outputFile, "%d\t%s\t%d\t%d\t%d\t%d\t%d\t%d", instructionLine, opmap[i.op], i.r, i.l, i.m, pc, bp, sp);
+	fprintf(outputFile, "%-5d%5s%5d%5d%5d%5d%5d%5d", instructionLine, opmap[i.op], i.r, i.l, i.m, pc, bp, sp);
 	
 	//Now we need to print out the stack...
 	//Since the stack starts at 1 according to the assignment sheet, just print from there...
 	int barIterator = 0;
 	for(int i = 1; i <= sp; i++)
 	{
-		fprintf(outputFile, "\t%d", stack[i]);
+		fprintf(outputFile, "%10d", stack[i]);
 		
 		//Do we need to print a bar here?
 		if (barIterator <= arblp && arbl[barIterator] == i && i != sp)
 		{
-			fprintf(outputFile, "\t|");
+			fprintf(outputFile, "         |");
 			barIterator++;
 		}
 	}
@@ -288,7 +288,7 @@ void outputPartOne()
 		fprintf(outputFile, "%d\t%s\t%d\t%d\t%d\n", l, opstr, code[l].r, code[l].l, code[l].m);
 	}
 	
-	fprintf(outputFile, "Initial Values\t\t\t\tpc\tbp\tsp\n");
+	fprintf(outputFile, "Initial Values              pc   bp   sp\n");
 }
 
 //This populates the global 2D array opmap, and it should be called before opmap is used.
