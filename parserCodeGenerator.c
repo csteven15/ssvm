@@ -17,6 +17,7 @@
 #define MAX_TOKEN_SIZE 64
 #define MAX_SYMBOL_TABLE_SIZE 256
 #define MAX_NUMBER_SIZE 5
+#define SET_SIZE 256
 
 /*
 	If this is set to 0, then declared variables have
@@ -115,7 +116,7 @@ void error(int code, int token)
     	eprintf("Semicolon required after procedure declaration.");
     if (code == 36)
     	eprintf("Semicolon required after procedure block.");
-
+    	
     exit(1);
 }
 
@@ -454,6 +455,137 @@ void printSymbolTable()
 
 // --------------------------------------------------End Symbol Table Code--------------------------------------------------
 
+// --------------------------------------------------Begin Set Stuff--------------------------------------------------
+
+/*
+	So, a "set" in the world is an int array of size 256 (SET_SIZE) that maps to symbols...
+*/
+
+int firstFactor[SET_SIZE];
+int firstTerm[SET_SIZE];
+int firstExpression[SET_SIZE];
+int firstCondition[SET_SIZE];
+int firstStatement[SET_SIZE];
+int firstProcedureDeclaration[SET_SIZE];
+int firstVarDeclaration[SET_SIZE];
+int firstConstDeclaration[SET_SIZE];
+int firstBlock[SET_SIZE];
+int firstProgram[SET_SIZE];
+
+
+void setInit(int * set)
+{
+	for(int i = 0; i < SET_SIZE; i++)
+		set[i] = -1;
+}
+
+void populateSets()
+{
+	setInit(firstFactor);
+	firstFactor[0] = identsym;
+	firstFactor[1] = numbersym;
+	firstFactor[2] = lparentsym;
+	
+	setInit(firstTerm);
+	firstTerm[0] = identsym;
+	firstTerm[1] = numbersym;
+	firstTerm[2] = lparentsym;
+	
+	setInit(firstExpression);
+	firstExpression[0] = plussym;
+	firstExpression[1] = minussym;
+	firstExpression[2] = identsym;
+	firstExpression[3] = numbersym;
+	firstExpression[4] = lparentsym;
+	
+	setInit(firstCondition);
+	firstCondition[0] = oddsym;
+	firstCondition[1] = plussym;
+	firstCondition[2] = minussym;
+	firstCondition[3] = identsym;
+	firstCondition[4] = numbersym;
+	firstCondition[5] = lparentsym;
+	
+	setInit(firstStatement);
+	firstStatement[0] = identsym;
+	firstStatement[1] = callsym;
+	firstStatement[2] = beginsym;
+	firstStatement[3] = ifsym;
+	firstStatement[4] = whilesym;
+	firstStatement[5] = readsym;
+	firstStatement[6] = writesym;
+	
+	setInit(firstProcedureDeclaration);
+	firstProcedureDeclaration[0] = procsym;
+	
+	setInit(firstVarDeclaration);
+	firstVarDeclaration[0] = varsym;
+	
+	setInit(firstConstDeclaration);
+	firstConstDeclaration[0] = constsym;
+	
+	setInit(firstBlock);
+	firstBlock[0] = constsym;
+	firstBlock[1] = varsym;
+	firstBlock[2] = procsym;
+	firstBlock[3] = identsym;
+	firstBlock[4] = callsym;
+	firstBlock[5] = beginsym;
+	firstBlock[6] = ifsym;
+	firstBlock[7] = whilesym;
+	firstBlock[8] = readsym;
+	firstBlock[9] = writesym;
+	
+	setInit(firstProgram);
+	firstProgram[0] = constsym;
+	firstProgram[1] = varsym;
+	firstProgram[2] = procsym;
+	firstProgram[3] = identsym;
+	firstProgram[4] = callsym;
+	firstProgram[5] = beginsym;
+	firstProgram[6] = ifsym;
+	firstProgram[7] = whilesym;
+	firstProgram[8] = readsym;
+	firstProgram[9] = writesym;
+	firstProgram[10] = periodsym;
+}
+
+int setContains(int * set, int val)
+{
+	for(int i = 0; i < SET_SIZE; i++)
+	{
+		if (set[i] == val)
+			return 1;
+	}
+	return 0;
+}
+
+void setUnion(int * result, int * a, int * b)
+{
+	int rp = 0;
+	setInit(result);
+	
+	for(int i = 0; i < SET_SIZE; i++)
+	{
+		if (a[i] != -1)
+		{
+			result[rp] = a[i];
+			rp++;
+		}
+	}
+	
+	for(int i = 0; i < SET_SIZE; i++)
+	{
+		if (b[i] != -1 && !setContains(result, b[i]))
+		{
+			result[rp] = b[i];
+			rp++;
+		}
+	}
+}
+
+// --------------------------------------------------End Set Stuff--------------------------------------------------
+
 // --------------------------------------------------Begin Parser/Code Generator Code--------------------------------------------------
 
 
@@ -539,6 +671,17 @@ void writeCodeArray()
 
 int curToken = 0;
 
+void test(int * set, int error_code)
+{
+	if (!setContains(set, getTokenType(curToken)))
+	{
+		error(error_code, -1);
+		while (!setContains(set, getTokenType(curToken)))
+			curToken++;
+	}
+
+}
+
 /*
 	This variable should represent the current lexicographical level at all times...
 	Starts at -1 because main's block will increment it by 1 to get 0...
@@ -583,7 +726,6 @@ void program()
 {
     int start = curToken;
 
-
     block();
     //If current token is NOT a period
     if (getTokenType(curToken) != periodsym)
@@ -593,10 +735,7 @@ void program()
     }
     //printf("Got program from %d-%d\n", start, curToken);
 
-	/*REMOVE
-    //SIO
     emit(11, 0, 0, 3);
-    */
 }
 
 
@@ -822,42 +961,44 @@ void statement()
         	//Could not find symbol
         	error(11, curToken);
         }
-        if (symbolTable[place].kind != 2)
-        {
-        	//Cannot assign to procedure or constant
-        	error(12, curToken);
-        }
+        
+	    if (symbolTable[place].kind != 2)
+	    {
+	    	//Cannot assign to procedure or constant
+	    	error(12, curToken);
+	    }
 
-        curToken++;
+	    curToken++;
 
-        if (getTokenType(curToken) != becomesym)
-        {
+	    if (getTokenType(curToken) != becomesym)
+	    {
 			//Equal symbol instead of becomesym
 			if (getTokenType(curToken) == eqlsym)
 				error(1, curToken);
-            //Must be assignment statement
-            error(13, curToken);
-        }
+	        //Must be assignment statement
+	        error(13, curToken);
+	    }
 
 
 
-        curToken++;
+	    curToken++;
 
-        //Parse an expression...
-        expression();
+	    //Parse an expression...
+	    expression();
 
-        if (ENFORCE_VARIABLE_ASSIGNMENT)
-        {
-		    //Inform the world that this variable has been assigned!
-		    symbolTable[place].val = 1;
+	    if (ENFORCE_VARIABLE_ASSIGNMENT)
+	    {
+			//Inform the world that this variable has been assigned!
+			symbolTable[place].val = 1;
 		}
 
-        //Put the resulting expression into the variable
-        int levelsDown = lexLevel-symbolTable[place].level;
-        emit(4, rc-1, levelsDown, symbolTable[place].addr);
+	    //Put the resulting expression into the variable
+	    int levelsDown = lexLevel-symbolTable[place].level;
+	    emit(4, rc-1, levelsDown, symbolTable[place].addr);
 
-        //The register the expression was stored into is now free again, because we stored it into the variable in the stack..
-        rc = rc-1;
+	    //The register the expression was stored into is now free again, because we stored it into the variable in the stack..
+	    rc = rc-1;
+		
     }
     else if (getTokenType(curToken) == beginsym)
     {
@@ -1290,6 +1431,7 @@ int main(int argc, char** argv)
 		return 1;
 	}
 
+	populateSets();
     openFiles(argv[1], argv[2]);
     readInputFile();
     populateTokenList();

@@ -29,6 +29,7 @@ Line	OP	R	L	M
 27	lod	0	0	6
 28	sio	0	0	1
 29	rtn	0	0	0
+30	sio	0	0	3
 Initial Values              pc   bp   sp
 0      jmp    0    0   19   19    1    0
 19     inc    0    0    7   20    1    7         0         0         0         0         0         0         0
