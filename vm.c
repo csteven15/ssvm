@@ -1,6 +1,6 @@
 /*
-	COP3402 Homework #3: Parser & Code Generator Assignment
-	3/23/2017
+	COP3402 Homework #4: Parser & Code Generator Assignment
+	4/13/2017
 	Philip Rodriguez & Steven Chen
 	ph644520 & st140537
 */
@@ -279,13 +279,13 @@ void execute()
 // It also prepares for (7B) by printing the heading for (7B).
 void outputPartOne()
 {
-	fprintf(outputFile, "Line\tOP\tR\tL\tM\n");
+	fprintf(outputFile, "Line     OP     R     L     M\n");
 	
 	char opstr[16];
 	for(int l = 0; l < codeLength; l++)
 	{
 		strcpy(opstr, opmap[code[l].op]);
-		fprintf(outputFile, "%d\t%s\t%d\t%d\t%d\n", l, opstr, code[l].r, code[l].l, code[l].m);
+		fprintf(outputFile, "%-6d%5s%6d%6d%6d\n", l, opstr, code[l].r, code[l].l, code[l].m);
 	}
 	
 	fprintf(outputFile, "Initial Values              pc   bp   sp\n");

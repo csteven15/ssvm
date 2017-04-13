@@ -57,10 +57,9 @@ void checkError()
 	if (errorFile)
 	{
 		//It exists! There is an error!
-		char message[1024];
-		fgets(message, 1024, errorFile);
-		printf("%s", message);
 		fclose(errorFile);
+		readFile("ef");
+		printf("%s", readBuffer);
 		exit(1);
 	}
 	else

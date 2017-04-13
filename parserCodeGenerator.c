@@ -17,6 +17,12 @@
 #define MAX_TOKEN_SIZE 64
 #define MAX_SYMBOL_TABLE_SIZE 256
 #define MAX_NUMBER_SIZE 5
+
+/*
+	A set, in this program, is a size SET_SIZE integer array
+	filled with -1 for empty slots. Use setInit([set array])
+	to fill a new set with -1's. 
+*/
 #define SET_SIZE 256
 
 /*
@@ -32,7 +38,7 @@
 
 void eprintf(char * message)
 {
-	FILE * errorFile = fopen("ef", "w");
+	FILE * errorFile = fopen("ef", "a");
 	fprintf(errorFile, "An error occurred while parsing: %s\n", message);
 	fclose(errorFile);
 }
@@ -116,8 +122,7 @@ void error(int code, int token)
     	eprintf("Semicolon required after procedure declaration.");
     if (code == 36)
     	eprintf("Semicolon required after procedure block.");
-    	
-    exit(1);
+    
 }
 
 /*
@@ -217,6 +222,43 @@ void readInputFile()
 
 // --------------------------------------------------Begin Token List Management Code--------------------------------------------------
 
+/*
+	Here is a list of the token types
+ */
+int nulsym = 1;
+int identsym = 2;
+int numbersym = 3;
+int plussym = 4;
+int minussym = 5;
+int multsym = 6;
+int slashsym = 7;
+int oddsym = 8;
+int eqlsym = 9;
+int neqsym = 10;
+int lesssym = 11;
+int leqsym = 12;
+int gtrsym = 13;
+int geqsym = 14;
+int lparentsym = 15;
+int rparentsym = 16;
+int commasym = 17;
+int semicolonsym = 18;
+int periodsym = 19;
+int becomesym = 20;
+int beginsym = 21;
+int endsym = 22;
+int ifsym = 23;
+int thensym = 24;
+int whilesym = 25;
+int dosym = 26;
+int callsym = 27;
+int constsym = 28;
+int varsym = 29;
+int procsym = 30;
+int writesym = 31;
+int readsym = 32;
+int elsesym = 33;
+
 //This list will hold our tokens.
 char tokenList[MAX_INPUT_SIZE][MAX_TOKEN_SIZE];
 
@@ -283,43 +325,6 @@ int getTokenType(int tokenIndex)
 {
     return atoi(tokenList[tokenIndex]);
 }
-
-/*
-	Here is a list of the token types
- */
-int nulsym = 1;
-int identsym = 2;
-int numbersym = 3;
-int plussym = 4;
-int minussym = 5;
-int multsym = 6;
-int slashsym = 7;
-int oddsym = 8;
-int eqlsym = 9;
-int neqsym = 10;
-int lesssym = 11;
-int leqsym = 12;
-int gtrsym = 13;
-int geqsym = 14;
-int lparentsym = 15;
-int rparentsym = 16;
-int commasym = 17;
-int semicolonsym = 18;
-int periodsym = 19;
-int becomesym = 20;
-int beginsym = 21;
-int endsym = 22;
-int ifsym = 23;
-int thensym = 24;
-int whilesym = 25;
-int dosym = 26;
-int callsym = 27;
-int constsym = 28;
-int varsym = 29;
-int procsym = 30;
-int writesym = 31;
-int readsym = 32;
-int elsesym = 33;
 
 // --------------------------------------------------End Token List Management Code--------------------------------------------------
 
@@ -472,6 +477,16 @@ int firstConstDeclaration[SET_SIZE];
 int firstBlock[SET_SIZE];
 int firstProgram[SET_SIZE];
 
+int followBlock[SET_SIZE];
+int followConstantDeclaration[SET_SIZE];
+int followVariableDeclaration[SET_SIZE];
+int followProcedureDeclaration[SET_SIZE];
+int followStatement[SET_SIZE];
+int followCondition[SET_SIZE];
+int followRelOp[SET_SIZE];
+int followExpression[SET_SIZE];
+int followTerm[SET_SIZE];
+int followFactor[SET_SIZE];
 
 void setInit(int * set)
 {
@@ -548,6 +563,116 @@ void populateSets()
 	firstProgram[8] = readsym;
 	firstProgram[9] = writesym;
 	firstProgram[10] = periodsym;
+	
+	//Follow Sets
+
+	setInit(followBlock);
+	followBlock[0] = periodsym;
+	followBlock[1] = semicolonsym;
+
+	setInit(followConstantDeclaration);
+	followConstantDeclaration[0] = varsym;
+	followConstantDeclaration[1] = procsym;
+	followConstantDeclaration[2] = identsym;
+	followConstantDeclaration[3] = callsym;
+	followConstantDeclaration[4] = beginsym;
+	followConstantDeclaration[5] = ifsym;
+	followConstantDeclaration[6] = whilesym;
+	followConstantDeclaration[7] = readsym;
+	followConstantDeclaration[8] = writesym;
+	followConstantDeclaration[9] = periodsym;
+	followConstantDeclaration[10] = semicolonsym;
+
+	setInit(followVariableDeclaration);
+	followVariableDeclaration[0] = procsym;
+	followVariableDeclaration[1] = periodsym;
+	followVariableDeclaration[2] = identsym;
+	followVariableDeclaration[3] = callsym;
+	followVariableDeclaration[4] = beginsym;
+	followVariableDeclaration[5] = ifsym;
+	followVariableDeclaration[6] = whilesym;
+	followVariableDeclaration[7] = readsym;
+	followVariableDeclaration[8] = writesym;
+	followVariableDeclaration[9] = semicolonsym;
+
+	setInit(followProcedureDeclaration);
+	followProcedureDeclaration[0] = identsym;
+	followProcedureDeclaration[1] = callsym;
+	followProcedureDeclaration[2] = beginsym;
+	followProcedureDeclaration[3] = ifsym;
+	followProcedureDeclaration[4] = whilesym;
+	followProcedureDeclaration[5] = readsym;
+	followProcedureDeclaration[6] = writesym;
+	followProcedureDeclaration[7] = periodsym;
+	followProcedureDeclaration[8] = semicolonsym;
+
+	setInit(followStatement);
+	followStatement[0] = semicolonsym;
+	followStatement[1] = endsym;
+	followStatement[2] = elsesym;
+	followStatement[3] = periodsym;
+
+	setInit(followCondition);
+	followCondition[0] = dosym;
+	followCondition[1] = thensym;
+
+	setInit(followRelOp);
+	followRelOp[0] = plussym;
+	followRelOp[1] = minussym;
+	followRelOp[2] = identsym;
+	followRelOp[3] = numbersym;
+	followRelOp[4] = lparentsym;
+
+	setInit(followExpression);
+	followExpression[0] = eqlsym;
+	followExpression[1] = lesssym;
+	followExpression[2] = leqsym;
+	followExpression[3] = gtrsym;
+	followExpression[4] = geqsym;
+	followExpression[5] = neqsym;
+	followExpression[6] = dosym;
+	followExpression[7] = thensym;
+	followExpression[8] = semicolonsym;
+	followExpression[9] = endsym;
+	followExpression[10] = elsesym;
+	followExpression[11] = periodsym;
+	followExpression[12] = rparentsym;
+
+	setInit(followTerm);
+	followTerm[0] = eqlsym;
+	followTerm[1] = lesssym;
+	followTerm[2] = leqsym;
+	followTerm[3] = gtrsym;
+	followTerm[4] = geqsym;
+	followTerm[5] = neqsym;
+	followTerm[6] = dosym;
+	followTerm[7] = thensym;
+	followTerm[8] = semicolonsym;
+	followTerm[9] = endsym;
+	followTerm[10] = elsesym;
+	followTerm[11] = periodsym;
+	followTerm[12] = rparentsym;
+	followTerm[13] = plussym;
+	followTerm[14] = minussym;
+
+	setInit(followFactor);
+	followFactor[0] = multsym;
+	followFactor[1] = slashsym;
+	followFactor[2] = plussym;
+	followFactor[3] = minussym;
+	followFactor[4] = periodsym;
+	followFactor[5] = semicolonsym;
+	followFactor[6] = endsym;
+	followFactor[7] = elsesym;
+	followFactor[8] = thensym;
+	followFactor[9] = dosym;
+	followFactor[10] = eqlsym;
+	followFactor[11] = neqsym;
+	followFactor[12] = lesssym;
+	followFactor[13] = leqsym;
+	followFactor[14] = gtrsym;
+	followFactor[15] = geqsym;
+	followFactor[16] = rparentsym;
 }
 
 int setContains(int * set, int val)
@@ -601,6 +726,9 @@ void setUnion(int * result, int * a, int * b)
  		// If rc is 17, that implies we tried to store at location 16, which
  		// does not exist since our registers only go from 0-15!
  		error(34, -1);
+ 		
+ 		//This is an error that cannot be recovered from!
+ 		exit(1);
  	}
  }
 
@@ -671,12 +799,12 @@ void writeCodeArray()
 
 int curToken = 0;
 
-void test(int * set, int error_code)
+void test(int * firstset, int * stopset, int errorCode)
 {
-	if (!setContains(set, getTokenType(curToken)))
+	if (!setContains(firstset, getTokenType(curToken)))
 	{
-		error(error_code, -1);
-		while (!setContains(set, getTokenType(curToken)))
+		error(errorCode, -1);
+		while (!setContains(firstset, getTokenType(curToken)) && !setContains(stopset, getTokenType(curToken)))
 			curToken++;
 	}
 
@@ -724,27 +852,22 @@ void doTheAwesomeParsingAndCodeGenerating()
 
 void program()
 {
-    int start = curToken;
-
     block();
+    
     //If current token is NOT a period
     if (getTokenType(curToken) != periodsym)
     {
         //Program must end with a period
         error(9, curToken);
     }
-    //printf("Got program from %d-%d\n", start, curToken);
 
     emit(11, 0, 0, 3);
 }
 
 
-//TODO: block should "start off" generating a jump, which will have to be updated to jump to the beginning of it's STATEMENT.
-//note that procedure decl happens before the statement for this block, so other procedures will be parsed in between the jump and the statement... which is key
 void block()
 {
     symbol s;
-    int start = curToken;
     //A block can be a constant-declaration, variable declaration, or a statement
     
     //Increment lexLevel and offsetCounter; generate code to increment for FV, SL, DL, RA
@@ -797,12 +920,6 @@ void block()
 				//Symbol table full or conflicting symbol!
             	error(29, curToken);
             }
-            /*REMOVE
-            emit(6, 0, 0, 1); // increment our stack size in the vm by 1 to allocate the space for this thing..
-            emit(1, rc, 0, s.val);  // load into register!
-            //Note that I think the lex levels down here is 0, since we just created this variable at this lexLevel...
-            emit(4, rc, 0, s.addr); // store onto vm stack!
-            */
         }
         while(getTokenType(curToken) == commasym);
 
@@ -843,13 +960,7 @@ void block()
             }
             curToken++;
             
-            /*REMOVE
-            //Now I have added a new symbol to my table and need to plop it into the vm stack...
-            emit(6, 0, 0, 1); // increment our stack size in the vm by 1 to allocate the space for this thing..
-            emit(1, rc, 0, s.val); // load into register!
-            //Note that I think the lex levels down here is 0, since we just created this variable at this lexLevel...
-            emit(4, rc, 0, s.addr); // store whats in register into vm stack!
-            */
+            
         }
         while(getTokenType(curToken) == commasym);
 
@@ -944,12 +1055,10 @@ void block()
     //Return from method...
     emit(2, 0, 0, 0);
 
-    //printf("Got block from %d-%d\n", start, curToken);
 }
 
 void statement()
 {
-    int start = curToken;
     //Statement could just be like x := 6;
     if (getTokenType(curToken) == identsym)
     {
@@ -1130,45 +1239,13 @@ void statement()
     {
     	curToken++;
 
-    	//Now, I expect an identifier!
-    	if (getTokenType(curToken) != identsym)
-    	{
-    		//No identifier whaaat?!?!?
-    		error(30, curToken);
-    	}
+    	//Now, I expect an expression! Result will be in rc-1
+    	expression();
 
-    	//Okay, we have an identifier!
-    	curToken++;
-
-    	//Does the identifier exist?
-    	int place = findSymbolByName(tokenList[curToken]);
-    	if (place == -1)
-    	{
-    		//Undeclared identifier!
-    		error(11, curToken);
-    	}
-    	if (symbolTable[place].kind != 2 && symbolTable[place].kind != 1)
-    	{
-    		//Can't write out a procedure!
-    		error(32, curToken);
-    	}
-
-    	if (ENFORCE_VARIABLE_ASSIGNMENT)
-    	{
-			//Enfoce that, if this is a variable, it must have been assigned to!
-			if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
-			{
-				//Use of unassigned variable!
-				error(33, curToken);
-			}
-    	}
-
-    	//Okay, it exists, and has no issues! We need to generate code to write to the screen this symbol...
-    	int levelsDown = lexLevel-symbolTable[place].level;
-    	emit(3, rc, levelsDown, symbolTable[place].addr); // Load into rc what is at the address of the symbol we are talking about
-    	emit(9, rc, 0, 1); // Print what is in rc to the screen
-
-    	curToken++;
+    	emit(9, rc-1, 0, 1); // Print what is in rc-1 to the screen
+    	
+    	//We are done with the value in rc-1, so remove it!
+    	rc--;
     }
     else if (getTokenType(curToken) == callsym)
     {
@@ -1202,12 +1279,10 @@ void statement()
     	
     	curToken++;
     }
-    //printf("Got statement from %d-%d\n", start, curToken);
 }
 
 void condition()
 {
-    int start = curToken;
     if (getTokenType(curToken) == oddsym)
     {
         curToken++;
@@ -1259,12 +1334,10 @@ void condition()
         }
         rc = rc-1;
     }
-    //printf("Got condition from %d-%d\n", start, curToken);
 }
 
 void expression()
 {
-    int start = curToken;
 	//Assume it's just a normal and positive expression...
     int adop = plussym;
     if (getTokenType(curToken) == plussym || getTokenType(curToken) == minussym)
@@ -1274,8 +1347,13 @@ void expression()
         curToken++;
     }
 
+	int pass[SET_SIZE];
+	setInit(pass);
+	setUnion(pass, pass, followTerm);
+	setUnion(pass, pass, followExpression);
+
     //Load a term! After this a term will be in rc-1.
-    term();
+    term(pass);
 
     if (adop == minussym)
     {
@@ -1286,10 +1364,15 @@ void expression()
     {
     	//Remember the operation...
     	int operation = getTokenType(curToken);
-
-    	//Load the next term...
+    	
         curToken++;
-        term();
+        
+    	//Load the next term...
+    	int pass[SET_SIZE];
+		setInit(pass);
+		setUnion(pass, pass, followTerm);
+		setUnion(pass, pass, followExpression);
+        term(pass);
 
         //Apply the operation!
         if (operation == plussym)
@@ -1299,15 +1382,17 @@ void expression()
         rc = rc-1;
 
     }
-    //printf("Got expression from %d-%d\n", start, curToken);
 }
 
-void term()
+void term(int * stopset)
 {
-    int start = curToken;
-
+    int pass[SET_SIZE];
+    setInit(pass);
+    setUnion(pass, pass, stopset);
+    setUnion(pass, pass, followFactor);
+    
     //This will get us a factor into register rc-1.
-    factor();
+    factor(pass);
 
     //Do we have more terms factors?
     while (getTokenType(curToken) == multsym || getTokenType(curToken) == slashsym)
@@ -1317,7 +1402,12 @@ void term()
 
     	//Load the next factor...
         curToken++;
-        factor();
+        
+        int pass[SET_SIZE];
+        setInit(pass);
+        setUnion(pass, pass, stopset);
+        setUnion(pass, pass, followFactor);
+        factor(pass);
 
         //Perform the operation on rc-2 and rc-1 and store into rc-2 and set rc to rc-1!
         if (operation == multsym)
@@ -1327,13 +1417,11 @@ void term()
         rc = rc-1;
 
     }
-
-    //printf("Got term from %d-%d\n", start, curToken);
 }
 
-void factor()
+void factor(int * stopset)
 {
-    int start = curToken;
+	test(firstFactor, stopset, 24);
     if (getTokenType(curToken) == identsym)
     {
         curToken++;
@@ -1346,29 +1434,34 @@ void factor()
         	//Undeclared identifier!
         	error(11, curToken);
         }
-        if (symbolTable[place].kind != 1 && symbolTable[place].kind != 2)
+        else
         {
-        	//Factor can't be a procedure!
-        	error(21, curToken);
+		    if (symbolTable[place].kind != 1 && symbolTable[place].kind != 2)
+		    {
+		    	//Factor can't be a procedure!
+		    	error(21, curToken);
+		    }
+		    else
+		    {
+				if (ENFORCE_VARIABLE_ASSIGNMENT)
+				{
+					//Enfoce that, if this is a variable, it must have been assigned to!
+					if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
+					{
+						//Use of unassigned variable!
+						error(33, curToken);
+					}
+				}
+
+				//Ok, valid identifier, so now emit away!
+				int levelsDown = lexLevel-symbolTable[place].level;
+				emit(3, rc, levelsDown, symbolTable[place].addr); // Load into register rc the value at address of the identifier...
+				rc++;									 // Let the world know that we used a register
+				rcCheck();
+
+				curToken++;
+		    }
         }
-
-        if (ENFORCE_VARIABLE_ASSIGNMENT)
-        {
-		    //Enfoce that, if this is a variable, it must have been assigned to!
-			if (symbolTable[place].kind == 2 && symbolTable[place].val != 1)
-			{
-				//Use of unassigned variable!
-				error(33, curToken);
-			}
-    	}
-
-        //Ok, valid identifier, so now emit away!
-        int levelsDown = lexLevel-symbolTable[place].level;
-        emit(3, rc, levelsDown, symbolTable[place].addr); // Load into register rc the value at address of the identifier...
-        rc++;									 // Let the world know that we used a register
-        rcCheck();
-
-        curToken++;
     }
     else if (getTokenType(curToken) == numbersym)
     {
@@ -1379,15 +1472,17 @@ void factor()
         	//Number too large!
         	error(25, curToken);
         }
+        else
+		{
+		    //Get the number's literal value...
+		    int literalValue = atoi(tokenList[curToken]);
 
-        //Get the number's literal value...
-        int literalValue = atoi(tokenList[curToken]);
+		    emit(1, rc, 0, literalValue); // Load immediately into register rc literalValue
+		    rc++;						  // Let the world know that we used a register
+		    rcCheck();
 
-        emit(1, rc, 0, literalValue); // Load immediately into register rc literalValue
-        rc++;						  // Let the world know that we used a register
-        rcCheck();
-
-        curToken++;
+		    curToken++;
+        }
     }
     else if (getTokenType(curToken) == lparentsym)
     {
@@ -1401,14 +1496,19 @@ void factor()
             //Expect )
             error(22, curToken);
         }
-        curToken++;
+        else
+        {
+        	curToken++;
+        }
     }
     else
     {
         //Expected a factor, did not find one.
         error(28, curToken);
     }
-    //printf("Got factor from %d-%d\n", start, curToken);
+    
+    //Enforce the next token is a stop symbol
+    test(stopset, stopset, 23);
 }
 
 
