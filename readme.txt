@@ -39,10 +39,11 @@ Below are descriptions of what the arguments do:
 There are many types of errors that may arise depending on what input is given to
 the program. There errors can come from either the lexical analyzer or the parser
 code generator. If an error happens, then the associated message will be printed
-out and then the program will terminate. The error message will tell you whether
-the lexical analyzer or parser code generator found the error, and a description of
-the error will be given as well. See the section "Additional Included Files" for
-more information about specific errors.
+out and then the program will attempt to resume parsing if the error occurred after
+the lexical analysis step. The error message will tell you whether the lexical 
+analyzer or parser code generator found the error, and a description of the error 
+will be given as well. See the section "Additional Included Files" for more 
+information about specific errors.
 
 -----------------------------Additional Included Files----------------------------
 
@@ -54,11 +55,12 @@ named "errorXX.txt" where XX is replaced by the error number that the code
 demonstrates. Some errors have multiple files to exemplify them.
 
 Also included with this program is one valid program, which is already loaded into
-input.txt. This program computes the value of n!, where n is the only input read
-in by the program. The program only works for valuse which will not overflow a
-32-bit integer. Example output for this program is included as well in a file
-named "sampleOutput.txt". Note that normally, output is printed to the screen and
-not a file.
+input.txt. This program computes the value of a^b, where a is the base and b is the
+exponent. The program computes the value recursively. The first value of input is a
+and the second value of input is b. Upon entering both values, the result of a to
+the b power will be shown. The maximum result is that which fits into a 32-bit 
+signed integer. The example output from a run of this PL/0 program is also given
+in sampleOutput.txt. The value of 2^3 was computed for that example run.
 
 ------------------------------Additional Information------------------------------
 
