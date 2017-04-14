@@ -5,7 +5,6 @@
 var base, exp, ans;
 
 procedure pow;
-const b=2;
 begin
 	if exp > 0 then
 		begin
@@ -20,6 +19,5 @@ begin
 	read exp;
 	ans := 1;
 	call pow;
-	write ans;
+	write ans
 end.
-
