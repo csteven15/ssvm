@@ -21,7 +21,7 @@
 /*
 	A set, in this program, is a size SET_SIZE integer array
 	filled with -1 for empty slots. Use setInit([set array])
-	to fill a new set with -1's. 
+	to fill a new set with -1's.
 */
 #define SET_SIZE 256
 
@@ -120,7 +120,7 @@ void error(int code, int token)
     	eprintf("Semicolon required after procedure declaration.\n", token);
     if (code == 36)
     	eprintf("Semicolon required after procedure block.\n", token);
-    
+
 }
 
 /*
@@ -498,19 +498,19 @@ void populateSets()
 	firstFactor[0] = identsym;
 	firstFactor[1] = numbersym;
 	firstFactor[2] = lparentsym;
-	
+
 	setInit(firstTerm);
 	firstTerm[0] = identsym;
 	firstTerm[1] = numbersym;
 	firstTerm[2] = lparentsym;
-	
+
 	setInit(firstExpression);
 	firstExpression[0] = plussym;
 	firstExpression[1] = minussym;
 	firstExpression[2] = identsym;
 	firstExpression[3] = numbersym;
 	firstExpression[4] = lparentsym;
-	
+
 	setInit(firstCondition);
 	firstCondition[0] = oddsym;
 	firstCondition[1] = plussym;
@@ -518,7 +518,7 @@ void populateSets()
 	firstCondition[3] = identsym;
 	firstCondition[4] = numbersym;
 	firstCondition[5] = lparentsym;
-	
+
 	setInit(firstStatement);
 	firstStatement[0] = identsym;
 	firstStatement[1] = callsym;
@@ -527,16 +527,16 @@ void populateSets()
 	firstStatement[4] = whilesym;
 	firstStatement[5] = readsym;
 	firstStatement[6] = writesym;
-	
+
 	setInit(firstProcedureDeclaration);
 	firstProcedureDeclaration[0] = procsym;
-	
+
 	setInit(firstVarDeclaration);
 	firstVarDeclaration[0] = varsym;
-	
+
 	setInit(firstConstDeclaration);
 	firstConstDeclaration[0] = constsym;
-	
+
 	setInit(firstBlock);
 	firstBlock[0] = constsym;
 	firstBlock[1] = varsym;
@@ -548,7 +548,7 @@ void populateSets()
 	firstBlock[7] = whilesym;
 	firstBlock[8] = readsym;
 	firstBlock[9] = writesym;
-	
+
 	setInit(firstProgram);
 	firstProgram[0] = constsym;
 	firstProgram[1] = varsym;
@@ -561,7 +561,7 @@ void populateSets()
 	firstProgram[8] = readsym;
 	firstProgram[9] = writesym;
 	firstProgram[10] = periodsym;
-	
+
 	//Follow Sets
 
 	setInit(followBlock);
@@ -688,7 +688,7 @@ void setUnion(int * result, int * a, int * b)
 	int tempresult[SET_SIZE];
 	setInit(tempresult);
 	int rp = 0;
-	
+
 	for(int i = 0; i < SET_SIZE; i++)
 	{
 		if (a[i] != -1)
@@ -697,7 +697,7 @@ void setUnion(int * result, int * a, int * b)
 			rp++;
 		}
 	}
-	
+
 	for(int i = 0; i < SET_SIZE; i++)
 	{
 		if (b[i] != -1 && !setContains(tempresult, b[i]))
@@ -706,7 +706,7 @@ void setUnion(int * result, int * a, int * b)
 			rp++;
 		}
 	}
-	
+
 	//Copy tempresult into result.
 	for(int i = 0; i < SET_SIZE; i++)
 	{
@@ -744,7 +744,7 @@ void setPrint(int * set)
  		// If rc is 17, that implies we tried to store at location 16, which
  		// does not exist since our registers only go from 0-15!
  		error(34, -1);
- 		
+
  		//This is an error that cannot be recovered from!
  		exit(1);
  	}
@@ -885,9 +885,9 @@ void program()
 	setInit(pass);
 	pass[0] = periodsym;
 	setUnion(pass, pass, followBlock);
-	
+
     block(pass);
-    
+
     //If current token is NOT a period
     if (getTokenType(curToken) != periodsym)
     {
@@ -903,12 +903,12 @@ void program()
 void block(int * stopset)
 {
     symbol s;
-    
+
     //Increment lexLevel and offsetCounter; generate code to increment for FV, SL, DL, RA
     //We strictly set to 4 because it should always begin at 4 for a block...
     lexLevel += 1;
-    int offsetCounter = 4; 
-    
+    int offsetCounter = 4;
+
     int blockJump = cx;
     emit(7, 0, 0, 0);
 
@@ -942,7 +942,7 @@ void block(int * stopset)
 		        {
 			    	curToken++;
 			    }
-			    
+
 			    if (getTokenType(curToken) != numbersym)
 			    {
 			        //Expected a number!
@@ -963,7 +963,7 @@ void block(int * stopset)
 						error(29, curToken);
 					}
 			    }
-		        
+
             }
         }
         while(getTokenType(curToken) == commasym);
@@ -1025,11 +1025,11 @@ void block(int * stopset)
         	curToken++;
         }
     }
-    
+
     while (getTokenType(curToken) == procsym)
     {
     	curToken++;
-    	
+
     	//We now should have an identifier
     	if (getTokenType(curToken) != identsym)
     	{
@@ -1038,25 +1038,25 @@ void block(int * stopset)
     	}
     	else
     	{
-			
+
 			//We did find an identifier!
 			curToken++;
-			
+
 			s.kind = 3;
 			strcpy(s.name, tokenList[curToken]);
 			s.val = 0; //unused?
 			s.level = lexLevel; //TODO: What is this for?
 			s.addr = cx; //This cx should be the place where block is going to emit the jump...
-			
+
 			if (!addSymbol(s))
 			{
 				//Symbol table full or conflicting symbol!
 		        error(29, curToken);
 			}
-			
+
 			//Symbol table wasn't full!
 			curToken++;
-			
+
 			//We now expect a semicolonsym
 			if (getTokenType(curToken) != semicolonsym)
 			{
@@ -1067,21 +1067,21 @@ void block(int * stopset)
 			{
 				curToken++;
 			}
-			
+
 			//Now we require the block for the procedure!
 			int pass[SET_SIZE];
 			setInit(pass);
 			pass[0] = semicolonsym;
 			setUnion(pass, pass, stopset);
 			setUnion(pass, pass, followBlock);
-			
+
 			//ERA1: If we fail to parse block, we may find a statement or block after this block...
 			setUnion(pass, pass, firstBlock);
 			setUnion(pass, pass, firstStatement);
-			
-			
+
+
 			block(pass);
-			
+
 			//Semicolon after block!
 			if (getTokenType(curToken) != semicolonsym)
 			{
@@ -1097,10 +1097,10 @@ void block(int * stopset)
 
 	//Update that jump we made!
 	code_array[blockJump].m = cx;
-	
+
 	//Increment to allocate for all variables!
 	emit(6, 0, 0, offsetCounter);
-	
+
 	//We must now emit everything for constant assignment...
 	for(int i = 0; i < MAX_SYMBOL_TABLE_SIZE; i++)
 	{
@@ -1109,7 +1109,7 @@ void block(int * stopset)
 		{
 			//We need to assign the constant it's value!
 			emit(1, rc, 0, symbolTable[i].val);
-			
+
 			//Note the 0 lexicographical level here; this is because the constant
 			//was generated at this level, so we go 0 down from this level! (We modify
 			//the current activation record)
@@ -1118,21 +1118,21 @@ void block(int * stopset)
 	}
 
     //And there MUST be a statement next... That is, a block must have at least one statement in addition to declarations...
-    
+
     //We'll tell statement to return to us with a symbol being in it's follow set, .
     int pass[SET_SIZE];
     setInit(pass);
     setUnion(pass, pass, stopset);
     setUnion(pass, pass, followStatement);
     statement(pass);
-    
+
     //Now, clean up symbol table and decrement lexLevel...
     removeSymbolsByLevel(lexLevel);
     lexLevel--;
-    
+
     //Return from method...
     emit(2, 0, 0, 0);
-    
+
     //Make sure we validly return to our caller...
     test(stopset, stopset, 8);
 }
@@ -1186,7 +1186,7 @@ void statement(int * stopset)
 	    setUnion(pass, pass, stopset);
 	    setUnion(pass, pass, followExpression);
 	    expression(pass);
-	    
+
 	    if (place != -1)
 	    {
 			if (ENFORCE_VARIABLE_ASSIGNMENT)
@@ -1199,14 +1199,14 @@ void statement(int * stopset)
 			int levelsDown = lexLevel-symbolTable[place].level;
 			emit(4, rc-1, levelsDown, symbolTable[place].addr);
 	    }
-		
+
 		//The register the expression was stored into is now free again, because we stored it into the variable in the stack..
 		rc = rc-1;
     }
     else if (getTokenType(curToken) == beginsym)
     {
         curToken++;
-        
+
         int pass[SET_SIZE];
         setInit(pass);
         pass[0] = semicolonsym;
@@ -1214,7 +1214,7 @@ void statement(int * stopset)
         setUnion(pass, pass, followStatement);
         setUnion(pass, pass, stopset);
         statement(pass);
-        
+
         while(getTokenType(curToken) == semicolonsym)
         {
             curToken++;
@@ -1246,7 +1246,7 @@ void statement(int * stopset)
 
         int jpc = cx;
         emit(8, rc-1, 0, 0);
-        
+
         //Once we've checked on the condition we are DONE with that result!
         rc -= 1;
 
@@ -1259,33 +1259,33 @@ void statement(int * stopset)
         {
         	curToken++;
         }
-        
+
         //then statement...
         setInit(pass);
         pass[0] = elsesym;
         setUnion(pass, pass, stopset);
         setUnion(pass, pass, followStatement);
-        
+
         statement(pass);
 
         code_array[jpc].m = cx;
-        
+
         //Now there could be an else...
 		if (getTokenType(curToken) == elsesym)
 		{
 			//There is an else!
-			
+
 			//So, we need to have something to jump past the else if the original condition was true...
 			int jmp = cx;
 			emit(7, 0, 0, 0);
-			
+
 			//We need to update our previous jump stuff to jump past that new jump statement, too!
 			code_array[jpc].m = cx;
-			
+
 			//Read the statement...
 			curToken++;
 			statement(pass);
-			
+
 			//Update jmp
 			code_array[jmp].m = cx;
 		}
@@ -1301,13 +1301,13 @@ void statement(int * stopset)
         pass[0] = dosym;
         setUnion(pass, pass, stopset);
         setUnion(pass, pass, followCondition);
-        
+
         // rc-1 will hold the condition's result
         condition(pass);
 
         int jpc = cx;
         emit(8, rc-1, 0, 0);
-        
+
         //Once we've checked on the condition we are DONE with that result!
         rc -= 1;
 
@@ -1320,11 +1320,11 @@ void statement(int * stopset)
         {
         	curToken++;
         }
-        
+
         setInit(pass);
         setUnion(pass, pass, stopset);
         setUnion(pass, pass, followStatement);
-        
+
         statement(pass);
 
         emit(7, 0, 0, checkStart);
@@ -1371,9 +1371,9 @@ void statement(int * stopset)
 				emit(10, rc, 0, 2); // Read input into register rc
 				int levelsDown = lexLevel-symbolTable[place].level;
 				emit(4, rc, levelsDown, symbolTable[place].addr); // Store the value now in register rc into the address of the ident
-				
+
 			}
-			
+
 			curToken++;
     	}
     }
@@ -1390,14 +1390,14 @@ void statement(int * stopset)
     	expression(pass);
 
     	emit(9, rc-1, 0, 1); // Print what is in rc-1 to the screen
-    	
+
     	//We are done with the value in rc-1, so remove it!
     	rc--;
     }
     else if (getTokenType(curToken) == callsym)
     {
     	curToken++;
-    	
+
     	//Better be an identifier!
     	if (getTokenType(curToken) != identsym)
     	{
@@ -1407,7 +1407,7 @@ void statement(int * stopset)
     	else
     	{
 			curToken++;
-			
+
 			//Is the identifier a procedure identifier?
 			int place = findSymbolByName(tokenList[curToken]);
 			if (place == -1)
@@ -1422,16 +1422,16 @@ void statement(int * stopset)
 					//Call to var or const is useless..
 					error(15, curToken);
 				}
-			
+
 				//Identifier is a procedure and exists!
 				int levelsDown = lexLevel-symbolTable[place].level;
 				emit(5, 0, levelsDown, symbolTable[place].addr);
 			}
-			
+
 			curToken++;
     	}
     }
-    
+
     test(stopset, stopset, 19);
 }
 
@@ -1442,7 +1442,7 @@ void condition(int * stopset)
     if (getTokenType(curToken) == oddsym)
     {
         curToken++;
-        
+
         int pass[SET_SIZE];
         setInit(pass);
         setUnion(pass, pass, stopset);
@@ -1460,7 +1460,7 @@ void condition(int * stopset)
         pass[0] = numbersym;
         setUnion(pass, pass, stopset);
         setUnion(pass, pass, followExpression);
-    
+
         expression(pass);
 
 		int relop = 0;
@@ -1474,7 +1474,7 @@ void condition(int * stopset)
         	relop = getTokenType(curToken);
         	curToken++;
         }
-        
+
         setInit(pass);
         setUnion(pass, pass, stopset);
         setUnion(pass, pass, followExpression);
@@ -1540,9 +1540,9 @@ void expression(int * stopset)
     {
     	//Remember the operation...
     	int operation = getTokenType(curToken);
-    	
+
         curToken++;
-        
+
     	//Load the next term...
     	int pass[SET_SIZE];
 		setInit(pass);
@@ -1567,7 +1567,7 @@ void term(int * stopset)
     setInit(pass);
     setUnion(pass, pass, stopset);
     setUnion(pass, pass, followFactor);
-    
+
     //This will get us a factor into register rc-1.
     factor(pass);
 
@@ -1579,7 +1579,7 @@ void term(int * stopset)
 
     	//Load the next factor...
         curToken++;
-        
+
         int pass[SET_SIZE];
         setInit(pass);
         setUnion(pass, pass, stopset);
@@ -1683,7 +1683,7 @@ void factor(int * stopset)
         	curToken++;
         }
     }
-    
+
     //Enforce the next token is a stop symbol
     test(stopset, stopset, 23);
 }
