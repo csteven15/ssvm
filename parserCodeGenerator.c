@@ -821,7 +821,7 @@ void test(int * firstset, int * stopset, int errorCode)
 {
 	if (!setContains(firstset, getTokenType(curToken)))
 	{
-		printf("Skipping on token %d\n", curToken);
+		//printf("Skipping on token %d\n", curToken);
 		error(errorCode, curToken);
 		while (!setContains(firstset, getTokenType(curToken)) && !setContains(stopset, getTokenType(curToken)))
 		{
@@ -832,7 +832,7 @@ void test(int * firstset, int * stopset, int errorCode)
 			}
 			curToken++;
 		}
-		printf("Skipped to token %d\n", curToken);
+		//printf("Skipped to token %d\n", curToken);
 	}
 
 }
@@ -1163,11 +1163,17 @@ void statement(int * stopset)
 
 	    if (getTokenType(curToken) != becomesym)
 	    {
-			//Equal symbol instead of becomesym
 			if (getTokenType(curToken) == eqlsym)
+			{
+				//Equal symbol instead of becomesym
 				error(1, curToken);
-	        //Must be assignment statement
-	        error(13, curToken);
+				curToken++;
+			}
+			else
+			{
+	        	//Must be assignment statement
+	        	error(13, curToken);
+	        }
 	    }
 	    else
 	    {
@@ -1451,6 +1457,7 @@ void condition(int * stopset)
     {
     	int pass[SET_SIZE];
         setInit(pass);
+        pass[0] = numbersym;
         setUnion(pass, pass, stopset);
         setUnion(pass, pass, followExpression);
     
@@ -1467,6 +1474,10 @@ void condition(int * stopset)
         	relop = getTokenType(curToken);
         	curToken++;
         }
+        
+        setInit(pass);
+        setUnion(pass, pass, stopset);
+        setUnion(pass, pass, followExpression);
 
         expression(pass);
 

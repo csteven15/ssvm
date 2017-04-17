@@ -2,15 +2,9 @@
 
 Compiler Output:
 Running lexical analyzer...
-Lexical Analyzer Output:
-Symbolic Lexeme List:
-varsym identsym x semicolonsym beginsym identsym x becomesym numbersym 2 slashsym semicolonsym endsym periodsym 
-
-Lexeme List:
-29 2 x 18 21 2 x 20 3 2 7 18 22 19
 
 Running parser code generator...
-An error occurred while parsing: Expected a factor, did not find one!
+An error occurred while parsing token number 11: Expected a factor, did not find one!
 
 */
 

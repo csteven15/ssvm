@@ -2,15 +2,11 @@
 
 Compiler Output:
 Running lexical analyzer...
-Lexical Analyzer Output:
-Symbolic Lexeme List:
-constsym identsym x eqlsym numbersym 0 semicolonsym varsym identsym a semicolonsym beginsym whilesym identsym x gtrsym numbersym 0 semicolonsym identsym a eqlsym numbersym 0 semicolonsym endsym periodsym
-
-Lexeme List:
-28 2 x 9 3 0 18 29 2 a 18 21 25 2 x 13 3 0 18 2 a 9 3 0 18 22 19
 
 Running parser code generator...
-An error occurred while parsing: do expected.
+An error occurred while parsing token number 18: do expected.
+
+An error occurred while parsing token number 21: Use of = instead of :=.
 
 */
 
