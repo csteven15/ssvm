@@ -2,15 +2,9 @@
 
 Compiler Output:
 Running lexical analyzer...
-Lexical Analyzer Output:
-Symbolic Lexeme List:
-varsym identsym x semicolonsym beginsym identsym x becomesym numbersym 0 semicolonsym slashsym endsym periodsym 
-
-Lexeme List:
-29 2 x 18 21 2 x 20 3 0 18 7 22 19
 
 Running parser code generator...
-An error occurred while parsing: Incorrect symbol following statement.
+An error occurred while parsing token number 11: Incorrect symbol following statement.
 
 */
 
