@@ -1,5 +1,0 @@
-Symbolic Lexeme List:
-varsym identsym base commasym identsym exp commasym identsym ans semicolonsym procsym identsym pow semicolonsym beginsym ifsym identsym exp gtrsym numbersym 0 thensym beginsym identsym exp becomesym identsym exp minussym numbersym 1 semicolonsym identsym ans becomesym identsym ans multsym identsym base semicolonsym callsym identsym pow semicolonsym endsym endsym semicolonsym beginsym readsym identsym base semicolonsym readsym identsym exp semicolonsym identsym ans becomesym numbersym 1 semicolonsym callsym identsym pow semicolonsym writesym identsym ans endsym periodsym 
-
-Lexeme List:
-29 2 base 17 2 exp 17 2 ans 18 30 2 pow 18 21 23 2 exp 13 3 0 24 21 2 exp 20 2 exp 5 3 1 18 2 ans 20 2 ans 6 2 base 18 27 2 pow 18 22 22 18 21 32 2 base 18 32 2 exp 18 2 ans 20 3 1 18 27 2 pow 18 31 2 ans 22 19 
