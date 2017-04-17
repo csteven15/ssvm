@@ -292,7 +292,7 @@ void openFiles(char * inputFile, char * outputFile)
 	outFile = fopen(outputFile, "w");
 
 	fseek(inFile, 0, SEEK_END);
-	int inputSize = ftell(inFile)-1;
+	int inputSize = ftell(inFile);
 	inputCharsSize = inputSize;
 	fseek(inFile, 0, SEEK_SET);
 	int i;
